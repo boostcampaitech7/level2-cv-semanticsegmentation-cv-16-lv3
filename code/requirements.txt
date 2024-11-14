@@ -1,0 +1,13 @@
+opencv-python-headless==4.10.0.84
+pandas==2.2.3
+scikit-learn==1.5.2
+albumentations==1.4.18
+matplotlib==3.9.2
+
+# json
+pandas==2.0.3
+seaborn==0.13.2
+PIL
+numpy==1.23.5
+pathlib==1.0.1
+matplotlib==3.7.5
