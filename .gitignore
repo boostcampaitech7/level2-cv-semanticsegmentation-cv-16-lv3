@@ -279,3 +279,9 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,python,windows
 
+#segmentation project data 제외
+code/data* 
+output/*
+requirements.txt
+data/*
+
