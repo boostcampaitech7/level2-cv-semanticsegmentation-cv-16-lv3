@@ -283,3 +283,5 @@ $RECYCLE.BIN/
 code/data* 
 output/*
 requirements.txt
+data/*
+
