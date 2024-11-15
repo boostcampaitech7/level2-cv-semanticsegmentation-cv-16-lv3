@@ -1,0 +1,146 @@
+# configs/config.yaml
+
+# wandb
+wandb:
+  api_key: ca30bdb1b0d483a668a496c3de21b29a07152bca
+  team_name: CV_12_Segmantation
+  project_name: "segmentation_project2"
+  experiment_detail: 진행하는 실험의 이름
+
+
+# image resize
+image_size: &image_size 512 #&는 앵커로, 특정값은 별칭(*)으로 저장하여 yaml 에서 해당값을 여러번 재사용할 수 있게함.
+
+max_epoch: &max_epoch 5
+
+
+# 모델명 및 사전 학습 여부
+model:
+  name: DeepLabV3Plus # 모델 이름
+  parameters:         # 모델 파라미터 섹션 -> 이는 segmentation_models_pytorch 공식 라이브러리의 github에서 확인.
+    encoder_name: efficientnet-b0
+    encoder_weights: imagenet
+    classes: 29
+
+# train 매개변수 설정
+train:
+  max_epoch: *max_epoch
+  image_root: "data/train/DCM"
+  label_root: "data/train/outputs_json"
+  train_batch_size: 8
+  num_workers : 16
+  lr: 1e-3
+  weight_decay: 1e-6
+
+
+# validation 관련 인자
+validation:
+  val_fold: 0
+  val_interval: 2
+  num_workers: 8
+  threshold: 0.5
+  val_batch_size: 4
+
+# 스케줄러 관련 설정
+scheduler:
+  name: CosineAnnealingLR  # 스케줄러 이름
+  parameters:             # 스케줄러 파라미터
+    T_max: *max_epoch
+    eta_min: 1e-6
+
+# loss 관련설정
+loss:
+  name: BCEWithLogitsLoss
+  parameters: {} # dict 형태로 작성해야함
+    
+
+# transform 관련
+transform:
+  Resize:
+    width: *image_size #별표(*)는 이미지 별칭으로, 재사용하기 위해 사용함
+    height: *image_size
+  
+  HorizontalFlip:
+    use: false
+    p: 0.5
+
+  Rotate:
+    use: false
+    limit: 45 #특정 변환의 최대값 제한 설정.
+    p: 0.7
+
+  RandomBrightnessContrast:
+    brightness_limit: 0.2
+    contrast_limit: 0.2
+    p: 0.5
+
+
+# random seed값
+seed: 42
+
+# Output paths
+output:
+  checkpoint_dir: "../checkpoints"
+  name: "deeplabv3_resnet101_model.pt"
+  output_csv: "../output/submission2.csv"
+
+
+
+
+# checkpoint 저장 경로
+save_dir: ./checkpoints/Unet
+
+# Wandb_Project information
+# # wandb
+# wandb:
+#   api_key: ${WANDB_API_KEY}
+#   team_name: CV_16_Segmantation
+#   experiment_detail: 진행하는 실험의 이름
+#   project_name: "segmentation_project2"
+#   wandb_name: "deeplabv3_resnet101"
+
+# # Test parameters
+# test:
+#   batch_size: 16
+#   num_workers: 32
+#   resize_height: 512  # 수정 없음**
+#   resize_width: 512  # 수정 없음**
+#   original_height: 2048
+#   original_width: 2048
+#   threshold: 0.5  # 수정 없음**
+
+
+# # Transform parameters
+# transform:  # 추가: transform 설정
+#   Resize:
+#     width: 512  # 기존 설정 반영**
+#     height: 512  # 기존 설정 반영**# # Data paths
+# data:
+#   image_root_train: "data/train/DCM"
+#   label_root_train: "data/train/outputs_json"
+#   image_root_test: "data/test/DCM"
+#   classes: [
+#     'finger-1', 'finger-2', 'finger-3', 'finger-4', 'finger-5',
+#     'finger-6', 'finger-7', 'finger-8', 'finger-9', 'finger-10',
+#     'finger-11', 'finger-12', 'finger-13', 'finger-14', 'finger-15',
+#     'finger-16', 'finger-17', 'finger-18', 'finger-19', 'Trapezium',
+#     'Trapezoid', 'Capitate', 'Hamate', 'Scaphoid', 'Lunate',
+#     'Triquetrum', 'Pisiform', 'Radius', 'Ulna',
+#   ]
+
+# # Training parameters
+# training:
+#   epochs: 20  # 수정 없음**
+#   batch_size: 8  # 기존 설정 반영하여 수정**
+#   num_workers: 32
+#   learning_rate: 0.001  # 기존 설정 반영하여 수정**
+#   val_every: 2  # 기존 설정 반영하여 수정**
+#   random_seed: 42
+
+# # Model parameters
+# model:
+#   name: "deeplabv3_resnet101"
+#   encoder_name: "resnet101"  # 추가: encoder_name 정의**
+#   pretrained: true
+#   classes: 29  # 추가: 클래스 수 정의*
+
