@@ -21,7 +21,11 @@ def set_seed(seed):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-def save_model(model, file_name='fcn_resnet50_best_model.pt'):
+
+def save_model(model, file_name=None):
+    # 파일명이 지정되지 않은 경우, 디폴트 파일명을 현재 모델에 맞게 동적으로 생성
+    if file_name is None:
+        file_name = f"{type(model).__name__.lower()}_best_model.pt"
     output_path = os.path.join(SAVED_DIR, file_name)
     torch.save(model, output_path)
 

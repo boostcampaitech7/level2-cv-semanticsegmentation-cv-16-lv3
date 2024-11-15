@@ -93,6 +93,7 @@ if __name__ == "__main__":
     
     # Load configuration
     config = load_config(args)
+    print(config)
     
     # Set random seed
     set_seed(config.training.random_seed)
