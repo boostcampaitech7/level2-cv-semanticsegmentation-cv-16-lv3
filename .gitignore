@@ -24,6 +24,9 @@ sample_submission
 # labeling_make.ipynb 파일은 무시하지 않음
 !dataset/labeling_make.ipynb
 
+# EDA폴더의 .ipynb파일도 무시하지 않음!
+!EDA/*.ipynb
+
 # Created by https://www.toptal.com/developers/gitignore/api/macos,visualstudiocode,python,windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,visualstudiocode,python,windows
 
