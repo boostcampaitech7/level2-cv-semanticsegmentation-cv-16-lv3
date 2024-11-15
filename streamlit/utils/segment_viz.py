@@ -4,6 +4,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon, Patch
 import random
+from io import BytesIO
 from utils.data_loader import DataLoader
 
 # 시각화를 위한 팔레트와 class 정의
@@ -35,7 +36,7 @@ def viz(data_dir, user_selected_id=None):
         user_selected_id = random.choice(available_ids)
 
     selected_images = [img for img in pngs if img.startswith(user_selected_id)]
-    fig, ax = plt.subplots(2, 2, figsize=(12, 12))
+    fig, ax = plt.subplots(2, 2, figsize=(12, 12), constrained_layout = True) # constrained_layout 추가하여 여백을 줄임
     ax = ax.flatten()
 
     if selected_images:
@@ -47,12 +48,16 @@ def viz(data_dir, user_selected_id=None):
                 image = data_loader.load_image(img_path).convert('RGB')
                 ax[idx * 2].imshow(image)
                 ax[idx * 2].axis('off')
-                ax[idx * 2].set_title(f"Selected Image {user_selected_id}")
+                ax[idx * 2].set_title(f"Selected Image: {user_selected_id}"
+                                      , fontsize=20
+                                    )
 
                 annotations = data_loader.load_json(full_json_path)["annotations"]
                 ax[idx * 2 + 1].imshow(image)
                 ax[idx * 2 + 1].axis('off')
-                ax[idx * 2 + 1].set_title(f"Selected Image With Label {user_selected_id}")
+                ax[idx * 2 + 1].set_title(f"Selected Image with Label:{user_selected_id}"
+                                          , fontsize = 20
+                                          )
 
                 for annotation in annotations:
                     points = annotation["points"]
@@ -67,8 +72,13 @@ def viz(data_dir, user_selected_id=None):
                 print(f"An unexpected error occurred: {e}")
 
         legend_patches = [Patch(color=[c / 255.0 for c in color], label=cls) for cls, color in class_to_color.items()]
-        fig.legend(handles=legend_patches, loc='center left', bbox_to_anchor=(0.9, 0.5), ncol=1, title="Classes")
-        return fig  # Return the figure for display in Streamlit
+        fig.legend(handles=legend_patches, loc='center left', bbox_to_anchor=(1.0, 0.5), ncol=1, title="Classes"
+                   ,title_fontsize=20, prop={'size': 15}
+                   )
+        buf = BytesIO()
+        fig.savefig(buf, format="png", bbox_inches="tight") # fig를 png로 저장 및 여백 최소화
+        plt.close(fig)  # fig를 닫아 메모리를 해제
+        return buf  # 기존 figure를 반환하는 형식에서 이미지를 반환하는 형식으로 변환
     else:
         print(f"No images found for ID {user_selected_id}")
         return None

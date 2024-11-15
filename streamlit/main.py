@@ -31,7 +31,8 @@ def main():
         
         # Streamlit에서 그래프 표시
         if fig is not None:
-            st.pyplot(fig)
+            # st.pyplot(fig)로는 사이즈 변경이 안되어서 st.image로 변경(figsize를 바꿔봐도 안됨)
+            st.image(fig, width=680)
         else:
             st.write(f"No images found for ID {user_selected_id}")
             
