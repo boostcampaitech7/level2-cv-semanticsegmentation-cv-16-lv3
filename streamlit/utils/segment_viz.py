@@ -26,7 +26,7 @@ CLASSES = [
 ]
 class_to_color = {cls: tuple(color) for cls, color in zip(CLASSES, PALETTE)}
 
-def viz(data_dir, user_selected_id=None):
+def viz(data_dir, user_selected_id=None, cnt = '1'): # 4개를 볼때, legend가 중복되어 4개가 나오는 것을 막기 위해 cnt인자를 추가
     data_loader = DataLoader("../data/")
     pngs = data_loader.get_image_list()
     available_ids = list(set(img_path.split('/')[0] for img_path in pngs))
@@ -72,13 +72,22 @@ def viz(data_dir, user_selected_id=None):
                 print(f"An unexpected error occurred: {e}")
 
         legend_patches = [Patch(color=[c / 255.0 for c in color], label=cls) for cls, color in class_to_color.items()]
-        fig.legend(handles=legend_patches, loc='center left', bbox_to_anchor=(1.0, 0.5), ncol=1, title="Classes"
+        if cnt == '4': # cnt인자가 "4"일 때
+            buf = BytesIO()
+            fig.savefig(buf, format="png", bbox_inches="tight") # fig를 png로 저장 및 여백 최소화
+            plt.close(fig)  # fig를 닫아 메모리를 해제
+            return buf, legend_patches # 이미지와 legend patch를 반환(추후 multi_viz에서 하나의 legend만 만들기 위해서)
+        
+        else:
+            # 이전과 동일
+            fig.legend(handles=legend_patches, loc='center left', bbox_to_anchor=(1.0, 0.5), ncol=1, title="Classes"
                    ,title_fontsize=20, prop={'size': 15}
                    )
-        buf = BytesIO()
-        fig.savefig(buf, format="png", bbox_inches="tight") # fig를 png로 저장 및 여백 최소화
-        plt.close(fig)  # fig를 닫아 메모리를 해제
-        return buf  # 기존 figure를 반환하는 형식에서 이미지를 반환하는 형식으로 변환
+            buf = BytesIO()
+            fig.savefig(buf, format="png", bbox_inches="tight") # fig를 png로 저장 및 여백 최소화
+            plt.close(fig)  # fig를 닫아 메모리를 해제
+            return buf
+            
     else:
         print(f"No images found for ID {user_selected_id}")
         return None
