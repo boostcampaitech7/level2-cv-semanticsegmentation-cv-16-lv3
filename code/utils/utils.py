@@ -79,6 +79,7 @@ def set_wandb(configs):
                 'epoch': configs.max_epoch
             }
     )
+    wandb.run.name = configs.wandb.exp_name
 
 
 def parse_args():
