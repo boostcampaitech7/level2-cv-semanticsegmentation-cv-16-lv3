@@ -2,24 +2,24 @@
 
 # wandb
 wandb:
-  api_key: ca30bdb1b0d483a668a496c3de21b29a07152bca
+  api_key: ##본인의 api 키 적으시면 됩니다.
   team_name: CV_12_Segmantation
   project_name: "segmentation_project2"
   experiment_detail: 진행하는 실험의 이름
-
+  exp_name: deeplabv3
 
 # image resize
 image_size: &image_size 512 #&는 앵커로, 특정값은 별칭(*)으로 저장하여 yaml 에서 해당값을 여러번 재사용할 수 있게함.
 
-max_epoch: &max_epoch 5
+max_epoch: &max_epoch 300
 
 
 # 모델명 및 사전 학습 여부
 model:
   name: DeepLabV3Plus # 모델 이름
   parameters:         # 모델 파라미터 섹션 -> 이는 segmentation_models_pytorch 공식 라이브러리의 github에서 확인.
-    encoder_name: efficientnet-b0
-    encoder_weights: imagenet
+    encoder_name: efficientnet-b4
+    # encoder_weights: imagenet
     classes: 29
 
 # train 매개변수 설정
@@ -78,69 +78,17 @@ transform:
 # random seed값
 seed: 42
 
-# Output paths
-output:
-  checkpoint_dir: "../checkpoints"
-  name: "deeplabv3_resnet101_model.pt"
-  output_csv: "../output/submission2.csv"
 
+
+
+#test 관련 
+test:
+  image_root: "data/test/DCM"
+  model_path: "checkpoints/Unet"
+  model_name: "best_198epoch_0.9518.pt"
+  output_csv: "output/submission3.csv"
 
 
 
 # checkpoint 저장 경로
 save_dir: ./checkpoints/Unet
-
-# Wandb_Project information
-# # wandb
-# wandb:
-#   api_key: ${WANDB_API_KEY}
-#   team_name: CV_16_Segmantation
-#   experiment_detail: 진행하는 실험의 이름
-#   project_name: "segmentation_project2"
-#   wandb_name: "deeplabv3_resnet101"
-
-# # Test parameters
-# test:
-#   batch_size: 16
-#   num_workers: 32
-#   resize_height: 512  # 수정 없음**
-#   resize_width: 512  # 수정 없음**
-#   original_height: 2048
-#   original_width: 2048
-#   threshold: 0.5  # 수정 없음**
-
-
-# # Transform parameters
-# transform:  # 추가: transform 설정
-#   Resize:
-#     width: 512  # 기존 설정 반영**
-#     height: 512  # 기존 설정 반영**# # Data paths
-# data:
-#   image_root_train: "data/train/DCM"
-#   label_root_train: "data/train/outputs_json"
-#   image_root_test: "data/test/DCM"
-#   classes: [
-#     'finger-1', 'finger-2', 'finger-3', 'finger-4', 'finger-5',
-#     'finger-6', 'finger-7', 'finger-8', 'finger-9', 'finger-10',
-#     'finger-11', 'finger-12', 'finger-13', 'finger-14', 'finger-15',
-#     'finger-16', 'finger-17', 'finger-18', 'finger-19', 'Trapezium',
-#     'Trapezoid', 'Capitate', 'Hamate', 'Scaphoid', 'Lunate',
-#     'Triquetrum', 'Pisiform', 'Radius', 'Ulna',
-#   ]
-
-# # Training parameters
-# training:
-#   epochs: 20  # 수정 없음**
-#   batch_size: 8  # 기존 설정 반영하여 수정**
-#   num_workers: 32
-#   learning_rate: 0.001  # 기존 설정 반영하여 수정**
-#   val_every: 2  # 기존 설정 반영하여 수정**
-#   random_seed: 42
-
-# # Model parameters
-# model:
-#   name: "deeplabv3_resnet101"
-#   encoder_name: "resnet101"  # 추가: encoder_name 정의**
-#   pretrained: true
-#   classes: 29  # 추가: 클래스 수 정의*
-
