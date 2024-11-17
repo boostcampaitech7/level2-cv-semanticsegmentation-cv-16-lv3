@@ -1,4 +1,4 @@
-from .base_model import UnetModel, DeepLabV3PlusModel
+from .base_model import UnetModel, DeepLabV3PlusModel,UnetPlusPlus
 
 class ModelSelector():
     """
