@@ -11,7 +11,8 @@ class ModelSelector():
     def __init__(self) -> None:
         self.model_classes = {
             "Unet" : UnetModel,
-            "DeepLabV3Plus": DeepLabV3PlusModel
+            "DeepLabV3Plus": DeepLabV3PlusModel,
+            "UnetPlusPlus": UnetPlusPlus
         }
 
     

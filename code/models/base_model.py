@@ -24,3 +24,15 @@ class DeepLabV3PlusModel(nn.Module):
 
     def forward(self, x: torch.Tensor):
         return self.model(x)
+
+class UnetPlusPlus(nn.Module):
+    """
+    Base Model UnetPlusPlus
+    """
+    def __init__(self,
+                 **kwargs):
+        super(UnetPlusPlus, self).__init__()
+        self.model = smp.UnetPlusPlus(**kwargs)
+
+    def forward(self, x: torch.Tensor):
+        return self.model(x)
