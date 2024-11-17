@@ -44,11 +44,13 @@ class XRayDataset(Dataset):
                     continue        
                 filenames += list(fnames[y])
                 labelnames += list(labels[y])
-            
+    
             else:
+                if i != self.validation_fold:
+                    continue
                 filenames = list(fnames[y])
                 labelnames = list(labels[y])
-                break
+
         
         self.fnames = filenames
         self.labels = labelnames
