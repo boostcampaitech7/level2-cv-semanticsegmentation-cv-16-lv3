@@ -19,7 +19,7 @@ CLASSES = [
 ]
 
 class XRayDataset(Dataset):
-    def __init__(self, fnames, labels, image_root, label_root, fold=0, transforms=None, is_train=True):
+    def __init__(self, fnames, labels, image_root, label_root, fold=0, transforms=None, is_train=True, channel_1=False):
         self.transforms = A.Compose(transforms)
         self.is_train = is_train
         self.image_root = image_root
@@ -28,6 +28,7 @@ class XRayDataset(Dataset):
         self.class2ind = {v: i for i, v in enumerate(CLASSES)}
         self.ind2class = {v: k for k, v in self.class2ind.items()}
         self.num_classes = len(CLASSES)
+        self.channel_1 = channel_1
         
         groups = [osp.dirname(fname) for fname in fnames]
         
@@ -100,7 +101,14 @@ class XRayDataset(Dataset):
         image = torch.from_numpy(image).float()
         label = torch.from_numpy(label).float()
             
-        return image, label
+        if self.channel_1:
+            # image가 (C, H, W)인 경우
+            image = image[0, :, :]  # 첫 번째 채널 선택 (H, W)
+
+            # PyTorch에서 채널 차원을 추가
+            image = image.unsqueeze(0)  # (H, W) -> (1, H, W)
+        
+        return image, label 
     
 
 class XRayInferenceDataset(Dataset):
