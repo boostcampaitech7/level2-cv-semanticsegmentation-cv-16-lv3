@@ -43,7 +43,9 @@ def main(cfg):
                                 cfg.train.label_root,
                                 fold=cfg.validation.val_fold,
                                 transforms=transform,
-                                is_train=True)
+                                is_train=True,
+                                channel_1=cfg.train.channel_1
+                                )
     
     valid_dataset = XRayDataset(fnames,
                                 labels,
@@ -51,7 +53,9 @@ def main(cfg):
                                 cfg.train.label_root,
                                 fold=cfg.validation.val_fold,
                                 transforms=transform,
-                                is_train=False)
+                                is_train=False,
+                                channel_1=cfg.train.channel_1
+                                )
     
     train_loader = DataLoader(
         dataset=train_dataset, 
