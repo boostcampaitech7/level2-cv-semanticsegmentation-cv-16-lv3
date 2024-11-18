@@ -50,7 +50,10 @@ def inference(args, data_loader):
     with torch.no_grad():
         with tqdm(total=len(data_loader), desc="[Inference...]", disable=False) as pbar:
             for images, image_names in data_loader:
-                images = images.to(device)    
+                images = images.to(device)  
+                if args.channel == 1:
+                    images = images[:, 0, :, :]  # 첫 번째 채널 선택 (B, C, H, W)
+                    images = images.unsqueeze(1)
                 outputs = model(images)
                 
                 outputs = F.interpolate(outputs, size=(2048, 2048), mode="bilinear")
@@ -75,6 +78,7 @@ if __name__=="__main__":
     parser.add_argument("--thr", type=float, default=0.5)
     parser.add_argument("--output", type=str, default="./output.csv")
     parser.add_argument("--resize", type=int, default=512, help="Size to resize images (both width and height)")
+    parser.add_argument("--channel", type=int, default=3, help="set channel")
     args = parser.parse_args()
 
     fnames = {
