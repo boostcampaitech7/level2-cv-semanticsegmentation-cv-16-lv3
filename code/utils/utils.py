@@ -66,9 +66,9 @@ def set_seed(seed):
 def set_wandb(configs):
     wandb.login(key=configs.wandb.api_key)
     wandb.init(
-        # entity=configs['team_name'], #팀  wandb page생기면.
+        entity=configs.wandb.team_name, #팀  wandb page생기면.
         project=configs.wandb.project_name,
-        # name=configs['experiment_detail'], #진행하는 실험의 이름? 뭔지 모르겠음.
+        name=configs.wandb.exp_name, #진행하는 실험의 이름? 뭔지 모르겠음.
         config={
                 'model': configs.model.name,
                 'resize': configs.image_size,
@@ -79,7 +79,7 @@ def set_wandb(configs):
                 'epoch': configs.max_epoch
             }
     )
-    wandb.run.name = configs.wandb.exp_name
+  
 
 
 def parse_args():
