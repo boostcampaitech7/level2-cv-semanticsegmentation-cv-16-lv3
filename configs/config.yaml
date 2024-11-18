@@ -1,22 +1,25 @@
 # configs/config.yaml
 
+#model_name()
+model_name: &model_name UnetPlusPlus
+
 # wandb
 wandb:
   api_key: ##본인의 api 키 적으시면 됩니다.
-  team_name: CV_12_Segmantation
+  team_name: CV_SOTA
   project_name: "segmentation_project2"
   experiment_detail: 진행하는 실험의 이름
-  exp_name: UnetPlusPlus
+  exp_name: *model_name
 
 # image resize
 image_size: &image_size 1024 #&는 앵커로, 특정값은 별칭(*)으로 저장하여 yaml 에서 해당값을 여러번 재사용할 수 있게함.
 
-max_epoch: &max_epoch 150
+max_epoch: &max_epoch 10
 
 
 # 모델명 및 사전 학습 여부
 model:
-  name: UnetPlusPlus # 모델 이름
+  name: *model_name # 모델 이름
   parameters:         # 모델 파라미터 섹션 -> 이는 segmentation_models_pytorch 공식 라이브러리의 github에서 확인.
     encoder_name: efficientnet-b4
     # encoder_weights: imagenet
@@ -36,7 +39,7 @@ train:
 # validation 관련 인자
 validation:
   val_fold: 0
-  val_interval: 10
+  val_interval: 5
   num_workers: 8
   threshold: 0.5
   val_batch_size: 4
@@ -50,7 +53,7 @@ scheduler:
 
 # loss 관련설정
 loss:
-  name: BCEWithLogitsLoss
+  name: CombinedLoss
   parameters: {} # dict 형태로 작성해야함
     
 
@@ -84,8 +87,9 @@ seed: 42
 #test 관련 
 test:
   image_root: "data/test/DCM"
-  model_path: "checkpoints/Unet"
-  model_name: "best_198epoch_0.9518.pt"
+  model_path: "checkpoints"
+  model_path2: *model_name #model_path/model_path2/model_name 으로 model 가져옴.
+  model_file: "best_198epoch_0.9518.pt"
   output_csv: "output/submission3.csv"
 
 # Output paths

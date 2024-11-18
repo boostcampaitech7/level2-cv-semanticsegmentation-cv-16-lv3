@@ -1,0 +1,28 @@
+program: train.py
+name: segmentation_sweep
+method: bayes
+metric:
+  goal: maximize
+  name: dice
+
+parameters:
+  learning_rate:
+    distribution: uniform
+    max: 0.1
+    min: 0
+  batch_size:
+    values: [8, 16, 32]  # config.yaml의 train.train_batch_size를 기반으로 추가
+  epochs:
+    min: 5
+    max: 15
+  optimizer:
+    values: ["adam", "adamw"]
+
+  model_name:
+    values: ["Unet", "DeepLabV3", "UnetPlusPlus"]  # 다양한 모델 실험 추가
+  encoder_name:
+    values: ["efficientnet-b7","efficientnet-b4", "resnet101", "resnet50"]  # config.yaml의 encoder_name 반영
+  loss_function:
+    values: ["BCEWithLogitsLoss", "CombinedLoss", "DiceLoss"]  # 다양한 손실 함수 실험 추가
+  scheduler:
+    values: ["CosineAnnealingLR", "MultiStepLR", "ReduceLROnPlateau"]  # 스케줄러 옵션 추가
