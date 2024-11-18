@@ -123,5 +123,6 @@ if __name__=='__main__':
     
     with open(args.config, 'r') as f:
         cfg = OmegaConf.load(f)
+        print(cfg) #본인이 무엇을 config 에 정의했는지 알 수
     
     main(cfg)
