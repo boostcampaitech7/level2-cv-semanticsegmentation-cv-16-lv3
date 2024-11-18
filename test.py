@@ -6,7 +6,7 @@ import pandas as pd
 import os.path as osp
 import albumentations as A
 import torch.nn.functional as F
-
+from omegaconf import OmegaConf  # OmegaConf 추가
 from tqdm.auto import tqdm
 from torch.utils.data import DataLoader
 from dataset import XRayInferenceDataset
@@ -40,9 +40,9 @@ def decode_rle_to_mask(rle, height, width):
     return img.reshape(height, width)
 
 
-def inference(args, data_loader):
+def inference(conf, data_loader):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = torch.load(args.model).to(device)
+    model = torch.load(conf.test.model_path + "/" +conf.test.model_name).to(device)
     model.eval()
     
     rles = []
@@ -58,7 +58,7 @@ def inference(args, data_loader):
                 
                 outputs = F.interpolate(outputs, size=(2048, 2048), mode="bilinear")
                 outputs = torch.sigmoid(outputs)
-                outputs = (outputs > args.thr).detach().cpu().numpy()
+                outputs = (outputs > conf.validation.threshold).detach().cpu().numpy()
                 
                 for output, image_name in zip(outputs, image_names):
                     for c, segm in enumerate(output):
@@ -80,18 +80,21 @@ if __name__=="__main__":
     parser.add_argument("--resize", type=int, default=512, help="Size to resize images (both width and height)")
     parser.add_argument("--channel", type=int, default=3, help="set channel")
     args = parser.parse_args()
+    conf = OmegaConf.load("configs/config.yaml")
+    print(conf)
+
 
     fnames = {
-        osp.relpath(osp.join(root, fname), start=args.image_root)
-        for root, _, files in os.walk(args.image_root)
+        osp.relpath(osp.join(root, fname), start=conf.test.image_root)
+        for root, _, files in os.walk(conf.test.image_root)
         for fname in files
         if osp.splitext(fname)[1].lower() == ".png"
     }
-
-    tf = A.Resize(height=args.resize, width=args.resize)
+    resize_config = conf.transform.Resize
+    tf = A.Resize(height=resize_config.height, width=resize_config.width)
 
     test_dataset = XRayInferenceDataset(fnames,
-                                        args.image_root,
+                                        conf.test.image_root,
                                         transforms=tf)
     
     test_loader = DataLoader(
@@ -102,7 +105,9 @@ if __name__=="__main__":
         drop_last=False
     )
 
-    rles, filename_and_class = inference(args, test_loader)
+    rles, filename_and_class = inference(
+        conf = conf,
+        data_loader=test_loader)
 
     classes, filename = zip(*[x.split("_") for x in filename_and_class])
     
@@ -114,4 +119,4 @@ if __name__=="__main__":
         "rle": rles,
     })
 
-    df.to_csv(args.output, index=False)
+    df.to_csv(conf.test.output_csv, index=False)
