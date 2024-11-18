@@ -18,7 +18,7 @@ wandb:
   project_name: "segmentation_project2"
   experiment_detail: 진행하는 실험의 이름
   exp_name: *model_name
-  use_sweep: True 
+  use_sweep: False 
   sweeep_path: "configs/train_configs/train/sweep.yaml" 
 
 # 모델명 및 사전 학습 여부
