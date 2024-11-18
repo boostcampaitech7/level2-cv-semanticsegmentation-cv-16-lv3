@@ -1,28 +1,34 @@
 program: train.py
 name: segmentation_sweep
 method: bayes
+command:
+  - /home/jaegun/miniconda3/envs/AI_tech/bin/python  # Python 실행 경로(which python 을 통해 본인의 파이썬 실행경로적으셈)
+  - ${program}  # train.py 실행할 프로그램 이름입니다. 위에서 program: train.py로 지정되어 있으므로, 실제로는 train.py가 여기에 대입됩
+  - --config=configs/config.yaml  # config 파일 경로
+
 metric:
   goal: maximize
   name: dice
 
+
 parameters:
-  learning_rate:
+  train_lr:  # train 관련 하이퍼파라미터 (lr)
     distribution: uniform
     max: 0.1
-    min: 0
-  batch_size:
-    values: [8, 16, 32]  # config.yaml의 train.train_batch_size를 기반으로 추가
-  epochs:
+    min: 0.0
+  train_batch_size:  # train 관련 하이퍼파라미터 (batch size)
+    values: [4, 8, 16]
+  max_epoch:  # train 관련 하이퍼파라미터 (epoch)
     min: 5
     max: 15
-  optimizer:
-    values: ["adam", "adamw"]
 
-  model_name:
-    values: ["Unet", "DeepLabV3", "UnetPlusPlus"]  # 다양한 모델 실험 추가
-  encoder_name:
-    values: ["efficientnet-b7","efficientnet-b4", "resnet101", "resnet50"]  # config.yaml의 encoder_name 반영
-  loss_function:
-    values: ["BCEWithLogitsLoss", "CombinedLoss", "DiceLoss"]  # 다양한 손실 함수 실험 추가
-  scheduler:
-    values: ["CosineAnnealingLR", "MultiStepLR", "ReduceLROnPlateau"]  # 스케줄러 옵션 추가
+  model_name:  # model 이름
+    values: ["Unet", "DeepLabV3", "UnetPlusPlus"]
+  model_encoder_name:  # model encoder
+    values: ["efficientnet-b7", "efficientnet-b4", "resnet101", "resnet50"]
+
+  loss_name:  # loss 관련 하이퍼파라미터
+    values: ["BCEWithLogitsLoss", "CombinedLoss", "DiceLoss"]
+
+  scheduler_name:  # scheduler 관련 하이퍼파라미터
+    values: ["CosineAnnealingLR", "MultiStepLR", "ReduceLROnPlateau"]
