@@ -1,4 +1,4 @@
-from .base_model import UnetModel, DeepLabV3PlusModel,UnetPlusPlus, DeepLabV3PlusModel_channel0
+from .base_model import UnetModel, DeepLabV3PlusModel,UnetPlusPlus, DeepLabV3PlusModel_channel0, DeepLabV3PlusModel_LoRA
 
 
 class ModelSelector():
@@ -14,13 +14,14 @@ class ModelSelector():
             "Unet" : UnetModel,
             "DeepLabV3Plus": DeepLabV3PlusModel,
             "DeepLabV3PlusModel_channel0": DeepLabV3PlusModel_channel0,
-            "UnetPlusPlus": UnetPlusPlus
+            "UnetPlusPlus": UnetPlusPlus,
+            "DeepLabV3PlusModel_LoRA": DeepLabV3PlusModel_LoRA
         }
 
     
-    def get_model(self, model_name, **model_parameter):
+    def get_model(self, model_name, lora_use, lora_config, **model_parameter):
         if model_name not in self.model_classes:
             raise ValueError(f"모델 '{model_name}'은 등록되지 않았습니다.")
         
         #get 매서드는 딕셔너리 매서드로, get를 통해 키가 존재하면 해당 키값 반환, 존재하지 않으면 None
-        return self.model_classes.get(model_name, None)(**model_parameter)
+        return self.model_classes.get(model_name, None)(lora_use, lora_config, **model_parameter)

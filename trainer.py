@@ -32,7 +32,8 @@ class Trainer:
                  criterion: torch.nn.modules.loss._Loss,
                  max_epoch: int,
                  save_dir: str,
-                 val_interval: int):
+                 val_interval: int,
+                 lora_use: bool):
         self.model = model
         self.device = device
         self.train_loader = train_loader
@@ -44,6 +45,7 @@ class Trainer:
         self.save_dir = save_dir
         self.threshold = threshold
         self.val_interval = val_interval
+        self.lora_use = lora_use
 
 
     def save_model(self, epoch, dice_score, before_path):
@@ -58,6 +60,30 @@ class Trainer:
         torch.save(self.model, output_path)
         return output_path
 
+
+    def save_model_lora(self, epoch, dice_score, before_path):
+        # checkpoint 저장 폴더 생성
+        if not osp.isdir(self.save_dir):
+            os.makedirs(self.save_dir, exist_ok=True)
+
+        if before_path != "" and osp.exists(before_path):
+            os.remove(before_path)
+
+        # 모델의 state_dict()와 LoRA 파라미터 저장
+        checkpoint = {
+            'model_state_dict': self.model.state_dict(),  # 모델의 기본 파라미터 저장
+            'lora_params': {  # LoRA 파라미터 저장
+                'lora_A': self.model.lora_A.state_dict(),
+                'lora_B': self.model.lora_B.state_dict(),
+            },
+        }
+
+        output_path = osp.join(self.save_dir, f"best_{epoch}epoch_{dice_score:.4f}.pth")
+
+        # checkpoint 저장
+        torch.save(checkpoint, output_path)
+
+        return output_path
 
     def train_epoch(self, epoch):
         train_start = time.time()
@@ -173,6 +199,9 @@ class Trainer:
                 if best_dice < avg_dice:
                     print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
                     best_dice = avg_dice
-                    before_path = self.save_model(epoch, best_dice, before_path)
+                    if self.lora_use:
+                        before_path = self.save_model_lora(epoch, dice_score, before_path)
+                    else:
+                        before_path = self.save_model(epoch, best_dice, before_path)
 
             self.scheduler.step()
