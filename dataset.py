@@ -63,7 +63,11 @@ class XRayDataset(Dataset):
         image_name = self.fnames[item]
         image_path = osp.join(self.image_root, image_name)
         
-        image = cv2.imread(image_path)
+        if self.channel_1:
+            image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED) # 채널을 유지하면서 이미지 읽기
+            image = image[..., np.newaxis] # (2048, 2048) -> (2048, 2048, 1) 차원 추가
+        else:
+            image = cv2.imread(image_path)
         image = image / 255.
         
         label_name = self.labels[item]
@@ -102,13 +106,6 @@ class XRayDataset(Dataset):
         
         image = torch.from_numpy(image).float()
         label = torch.from_numpy(label).float()
-            
-        if self.channel_1:
-            # image가 (C, H, W)인 경우
-            image = image[0, :, :]  # 첫 번째 채널 선택 (H, W)
-
-            # PyTorch에서 채널 차원을 추가
-            image = image.unsqueeze(0)  # (H, W) -> (1, H, W)
         
         return image, label 
     
