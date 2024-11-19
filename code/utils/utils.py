@@ -23,10 +23,7 @@ from code.models.model_selector import ModelSelector
 # Load configuration
 from omegaconf import OmegaConf
 
-config_path = os.path.join('configs', 'config.yaml')
-config = OmegaConf.load(config_path)
 
-SAVED_DIR = config.output.checkpoint_dir
 
 #이미지.png 랑 라벨.json을 가져옵니다.
 def setup(cfg): 
@@ -65,10 +62,11 @@ def set_seed(seed):
 
 def set_wandb(configs):
     wandb.login(key=configs.wandb.api_key)
+    
     wandb.init(
-        # entity=configs['team_name'], #팀  wandb page생기면.
+        entity=configs.wandb.team_name, #팀  wandb page생기면.
         project=configs.wandb.project_name,
-        # name=configs['experiment_detail'], #진행하는 실험의 이름? 뭔지 모르겠음.
+        name=configs.wandb.exp_name, #진행하는 실험의 이름? 뭔지 모르겠음.
         config={
                 'model': configs.model.name,
                 'resize': configs.image_size,
@@ -79,7 +77,21 @@ def set_wandb(configs):
                 'epoch': configs.max_epoch
             }
     )
-    wandb.run.name = configs.wandb.exp_name
+    # Sweep 활성화 여부를 확인
+    if configs.wandb.use_sweep:
+        # wandb sweep에서 전달된 파라미터를 가져옴
+        config_sweep = wandb.config
+        
+        # Sweep에서 전달된 값으로 configs 업데이트 (수정된 부분)
+        configs.train.lr = config_sweep.get("train_lr", configs.train.lr)  
+        configs.train.train_batch_size = config_sweep.get("train_batch_size", configs.train.train_batch_size)  
+        configs.max_epoch = config_sweep.get("max_epoch", configs.max_epoch)  
+        configs.model.name = config_sweep.get("model_name", configs.model.name)  
+        configs.model.parameters.encoder_name = config_sweep.get("model_encoder_name", configs.model.parameters.encoder_name)  
+        configs.model.parameters.encoder_weights = config_sweep.get("model_encoder_weight",configs.model.parameters.encoder_weights)
+        configs.loss.name = config_sweep.get("loss_name", configs.loss.name)  
+        configs.scheduler.name = config_sweep.get("scheduler_name", configs.scheduler.name)  
+  
 
 
 def parse_args():

@@ -1,0 +1,38 @@
+program: train.py
+name: segmentation_sweep
+method: bayes
+command:
+  - /home/jaegun/miniconda3/envs/AI_tech/bin/python  # Python 실행 경로(which python 을 통해 본인의 파이썬 실행경로적으셈)
+  - ${program}  # train.py 실행할 프로그램 이름입니다. 위에서 program: train.py로 지정되어 있으므로, 실제로는 train.py가 여기에 대입됩
+  - --config=configs/config.yaml  # config 파일 경로
+
+metric:
+  goal: maximize
+  name: dice
+
+
+parameters:
+  train_lr:  # train 관련 하이퍼파라미터 (lr)
+    distribution: uniform
+    max: 0.1
+    min: 0.0
+  train_batch_size:  # train 관련 하이퍼파라미터 (batch size)
+    values: [4,8,16]
+  max_epoch:  # train 관련 하이퍼파라미터 (epoch)
+    min: 5
+    max: 100
+
+  model_name:  # model 이름
+    values: ["Unet", "DeepLabV3", "UnetPlusPlus"]
+
+  model_encoder_name:  # model encoder
+    values: ["efficientnet-b7", "efficientnet-b4", "resnet101", "resnet50"]
+
+  model_encoder_weight:
+    values: ["imagenet","advprop"]
+
+  loss_name:  # loss 관련 하이퍼파라미터
+    values: ["BCEWithLogitsLoss", "CombinedLoss", "DiceLoss"]
+
+  scheduler_name:  # scheduler 관련 하이퍼파라미터
+    values: ["CosineAnnealingLR", "MultiStepLR", "ReduceLROnPlateau"]
