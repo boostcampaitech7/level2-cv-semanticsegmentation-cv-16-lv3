@@ -66,24 +66,30 @@ class Trainer:
         if not osp.isdir(self.save_dir):
             os.makedirs(self.save_dir, exist_ok=True)
 
+        # 이전 checkpoint 파일 삭제
         if before_path != "" and osp.exists(before_path):
             os.remove(before_path)
 
-        # 모델의 state_dict()와 LoRA 파라미터 저장
-        checkpoint = {
-            'model_state_dict': self.model.state_dict(),  # 모델의 기본 파라미터 저장
-            'lora_params': {  # LoRA 파라미터 저장
-                'lora_A': self.model.lora_A.state_dict(),
-                'lora_B': self.model.lora_B.state_dict(),
-            },
+        # LoRA 관련 파라미터만 필터링
+        lora_state_dict = {
+            name: param.detach().cpu() for name, param in self.model.state_dict().items() if "lora_A" in name or "lora_B" in name
         }
 
-        output_path = osp.join(self.save_dir, f"best_{epoch}epoch_{dice_score:.4f}.pth")
+        # 모델의 state_dict()와 LoRA 파라미터 저장
+        checkpoint = {
+            'epoch': epoch,
+            'dice_score': dice_score,
+            'model_state_dict': self.model.state_dict(),  # 모델의 기본 파라미터 저장
+            'lora_state_dict': lora_state_dict,  # LoRA 파라미터만 저장
+        }
 
-        # checkpoint 저장
-        torch.save(checkpoint, output_path)
+        # checkpoint 파일 저장
+        save_path = osp.join(self.save_dir, f"checkpoint_epoch_{epoch}.pt")
+        torch.save(checkpoint, save_path)
+        
+        print(f"Checkpoint saved at {save_path}")
+        return save_path
 
-        return output_path
 
     def train_epoch(self, epoch):
         train_start = time.time()
@@ -200,7 +206,7 @@ class Trainer:
                     print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
                     best_dice = avg_dice
                     if self.lora_use:
-                        before_path = self.save_model_lora(epoch, dice_score, before_path)
+                        before_path = self.save_model_lora(epoch, best_dice, before_path)
                     else:
                         before_path = self.save_model(epoch, best_dice, before_path)
 

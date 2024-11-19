@@ -18,19 +18,11 @@ from dataset import XRayDataset
 from code.loss_functions.loss_selector import LossSelector
 from code.scheduler.scheduler_selector import SchedulerSelector
 from code.models.model_selector import ModelSelector
-from code.utils.utils import set_seed, set_wandb,setup
+from code.utils.utils import set_seed, set_wandb,setup, print_trainable_parameters
 
 import peft
 
 warnings.filterwarnings('ignore')
-
-def print_trainable_parameters(model):
-    # model.parameters()로 파라미터를 가져와서 그 중에서 gradient를 계산할 수 있는 파라미터만 출력
-    total_params = sum(p.numel() for p in model.parameters())
-    total_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    
-    print(f'Total parameters: {total_params}')
-    print(f'Trainable parameters: {total_trainable_params}')
     
 def main(cfg):
     #wandb 설정.
@@ -92,6 +84,9 @@ def main(cfg):
     if cfg.lora.use:
         lora_config = peft.LoraConfig(**cfg.lora.params)
         model = model_selector.get_model(cfg.model.name, cfg.lora.use, lora_config, **cfg.model.parameters)
+        # 어떻게 lora가 적용되는지 확인
+        # for name, param in model.named_parameters():
+        #     print(name, param.shape, param.requires_grad)
         print_trainable_parameters(model)
     else:
         model = model_selector.get_model(cfg.model.name, False, None, **cfg.model.parameters)

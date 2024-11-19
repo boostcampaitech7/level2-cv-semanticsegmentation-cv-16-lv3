@@ -68,7 +68,7 @@ def set_wandb(configs):
     wandb.init(
         # entity=configs['team_name'], #팀  wandb page생기면.
         project=configs.wandb.project_name,
-        # name=configs['experiment_detail'], #진행하는 실험의 이름? 뭔지 모르겠음.
+        name=configs.wandb.experiment_detail, #진행하는 실험의 이름? 뭔지 모르겠음.
         config={
                 'model': configs.model.name,
                 'resize': configs.image_size,
@@ -79,8 +79,14 @@ def set_wandb(configs):
                 'epoch': configs.max_epoch
             }
     )
-    wandb.run.name = configs.wandb.exp_name
 
+def print_trainable_parameters(model):
+    # model.parameters()로 파라미터를 가져와서 그 중에서 gradient를 계산할 수 있는 파라미터만 출력
+    total_params = sum(p.numel() for p in model.parameters())
+    total_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    
+    print(f'Total parameters: {total_params}')
+    print(f'Trainable parameters: {total_trainable_params}')
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Training script for segmentation model")
