@@ -88,7 +88,7 @@ def set_wandb(configs):
         configs.max_epoch = config_sweep.get("max_epoch", configs.max_epoch)  
         configs.model.name = config_sweep.get("model_name", configs.model.name)  
         configs.model.parameters.encoder_name = config_sweep.get("model_encoder_name", configs.model.parameters.encoder_name)  
-        configs.model.parameters.encoder_weights = config_sweep.get("model_encoder_weight",configs.model.paremeters.encoder_weights)
+        configs.model.parameters.encoder_weights = config_sweep.get("model_encoder_weight",configs.model.parameters.encoder_weights)
         configs.loss.name = config_sweep.get("loss_name", configs.loss.name)  
         configs.scheduler.name = config_sweep.get("scheduler_name", configs.scheduler.name)  
   

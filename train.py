@@ -119,6 +119,15 @@ if __name__=='__main__':
     #다른 config 를 사용할려면 터미널에 --config 붙이시면 됩니다.ex)python train.py --configs/alternative.yaml
     parser.add_argument("--config", type=str, default="configs/config.yaml")
 
+    # 개별 파라미터를 CLI로 받기 (wandb agent에서 전달되는 인자 대응)
+    parser.add_argument("--batch_size", type=int, help="Batch size for training")
+    parser.add_argument("--epoch", type=int, help="Number of epochs")
+    parser.add_argument("--learning_rate", type=float, help="Learning rate")
+    parser.add_argument("--loss_name", type=str, help="Loss function")
+    parser.add_argument("--model", type=str, help="Model name")
+    parser.add_argument("--resize", type=int, help="Image resize dimension")
+    parser.add_argument("--scheduler_name", type=str, help="Scheduler name")
+    
     args = parser.parse_args()
     
     with open(args.config, 'r') as f:
