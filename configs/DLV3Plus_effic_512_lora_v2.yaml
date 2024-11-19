@@ -29,6 +29,7 @@ lora:
     lora_alpha: 16
     lora_dropout: 0.1
     target_modules: "encoder._blocks.\\d+.(_expand_conv|_project_conv)$" # 잘 됨
+    # modules_to_save: ["encoder._blocks.\\d+._depthwise_conv", "decoder", "encoder._conv_head"]
     modules_to_save: ["encoder._blocks.\\d+._depthwise_conv", "decoder", "encoder._conv_head"]
 
 # train 매개변수 설정
