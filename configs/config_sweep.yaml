@@ -17,7 +17,7 @@ parameters:
     max: 0.1
     min: 0.0
   train_batch_size:  # train 관련 하이퍼파라미터 (batch size)
-    values: [1,2,4,]
+    values: [4,8,16]
   max_epoch:  # train 관련 하이퍼파라미터 (epoch)
     min: 5
     max: 100
@@ -30,6 +30,7 @@ parameters:
 
   model_encoder_weight:
     values: ["imagenet","advprop"]
+
   loss_name:  # loss 관련 하이퍼파라미터
     values: ["BCEWithLogitsLoss", "CombinedLoss", "DiceLoss"]
 
