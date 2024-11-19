@@ -17,16 +17,19 @@ parameters:
     max: 0.1
     min: 0.0
   train_batch_size:  # train 관련 하이퍼파라미터 (batch size)
-    values: [4, 8, 16]
+    values: [1,2,4,]
   max_epoch:  # train 관련 하이퍼파라미터 (epoch)
     min: 5
-    max: 15
+    max: 100
 
   model_name:  # model 이름
     values: ["Unet", "DeepLabV3", "UnetPlusPlus"]
+
   model_encoder_name:  # model encoder
     values: ["efficientnet-b7", "efficientnet-b4", "resnet101", "resnet50"]
 
+  model_encoder_weight:
+    values: ["imagenet","advprop"]
   loss_name:  # loss 관련 하이퍼파라미터
     values: ["BCEWithLogitsLoss", "CombinedLoss", "DiceLoss"]
 
