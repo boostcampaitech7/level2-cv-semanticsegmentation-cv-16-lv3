@@ -76,6 +76,8 @@ wandb 설정에서 Sweep 사용 여부를 True로 변경합니다.
 wandb:
   use_sweep: True
 ```
+## 4.3 wandb 홈페이지에 들어가서 해당 프로젝트에 들어가서 sweep 탭 클릭
+sweep configuration -> initialize sweep -> wande agent 커맨드 명령어 줄 것임. 해당 명령어 실행하면 sweep 실행함.
 
 # 5. streamlit 사용 방법
 streamlit 폴더에 들어가서
