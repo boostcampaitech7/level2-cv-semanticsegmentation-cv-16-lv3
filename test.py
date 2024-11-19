@@ -80,7 +80,7 @@ if __name__=="__main__":
     parser.add_argument("--resize", type=int, default=512, help="Size to resize images (both width and height)")
     parser.add_argument("--channel", type=int, default=3, help="set channel")
     args = parser.parse_args()
-    conf = OmegaConf.load("configs/config.yaml")
+    conf = OmegaConf.load("configs/config_lora.yaml")
     print(conf)
 
 
