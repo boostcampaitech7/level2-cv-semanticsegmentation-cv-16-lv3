@@ -59,3 +59,15 @@ class DataLoader:
                 
         # L과 R 이미지가 모두 있는 쌍만 반환
         return {k: v for k, v in pairs.items() if v['L'] is not None and v['R'] is not None}
+    
+    # test 이미지 불러오는 함수
+    def get_test_img_list(self):
+        test_img_list = []
+        test_dir = os.path.join(self.data_dir, 'test', 'DCM')
+        for img_folder in os.listdir(test_dir):
+            img_path = os.path.join(test_dir, img_folder)
+            for png in os.listdir(img_path):
+                if png.endswith('png'):
+                    total_path = os.path.join(img_folder, png)
+                    test_img_list.append(total_path)
+        return sorted(test_img_list)

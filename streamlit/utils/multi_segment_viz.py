@@ -4,8 +4,7 @@ from PIL import Image
 from io import BytesIO
 
 class MultiViz():
-    def __init__(self, data_dir, user_selected_ids):
-        self.data_dir = data_dir
+    def __init__(self, user_selected_ids):
         self.user_selected_ids = user_selected_ids # list로 출력할 이미지 ID를 받음
 
     def multi_viz(self):
@@ -13,8 +12,7 @@ class MultiViz():
         axes = axes.flatten()
 
         for i in range(0, 8, 2):
-            fig, legend_patches = viz(data_dir=self.data_dir, user_selected_id= self.user_selected_ids[i], cnt = '4')
-            # viz의 return이 이미지임으로 이미지를 open
+            fig, legend_patches = viz(user_selected_id= self.user_selected_ids[i], cnt = '4')
 
             # viz의 결과를 다시 시각화
             img = Image.open(fig)

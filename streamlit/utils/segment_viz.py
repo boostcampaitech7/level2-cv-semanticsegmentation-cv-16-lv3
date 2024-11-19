@@ -6,6 +6,8 @@ from matplotlib.patches import Polygon, Patch
 import random
 from io import BytesIO
 from utils.data_loader import DataLoader
+from utils.inference_viz import decode_rle_to_mask
+import numpy as np
 
 # 시각화를 위한 팔레트와 class 정의
 PALETTE = [
@@ -26,7 +28,7 @@ CLASSES = [
 ]
 class_to_color = {cls: tuple(color) for cls, color in zip(CLASSES, PALETTE)}
 
-def viz(data_dir, user_selected_id=None, cnt = '1'): # 4개를 볼때, legend가 중복되어 4개가 나오는 것을 막기 위해 cnt인자를 추가
+def viz(user_selected_id=None, cnt = '1', for_gt = True, df = False): # 4개를 볼때, legend가 중복되어 4개가 나오는 것을 막기 위해 cnt인자를 추가
     data_loader = DataLoader("../data/")
     pngs = data_loader.get_image_list()
     available_ids = list(set(img_path.split('/')[0] for img_path in pngs))
@@ -51,20 +53,42 @@ def viz(data_dir, user_selected_id=None, cnt = '1'): # 4개를 볼때, legend가
                 ax[idx * 2].set_title(f"Selected Image: {user_selected_id}"
                                       , fontsize=20
                                     )
+                if for_gt:
+                    annotations = data_loader.load_json(full_json_path)["annotations"]
+                    ax[idx * 2 + 1].imshow(image)
+                    ax[idx * 2 + 1].axis('off')
+                    ax[idx * 2 + 1].set_title(f"Selected Image with Label:{user_selected_id}"
+                                            , fontsize = 20
+                                            )
 
-                annotations = data_loader.load_json(full_json_path)["annotations"]
-                ax[idx * 2 + 1].imshow(image)
-                ax[idx * 2 + 1].axis('off')
-                ax[idx * 2 + 1].set_title(f"Selected Image with Label:{user_selected_id}"
-                                          , fontsize = 20
-                                          )
+                    for annotation in annotations:
+                        points = annotation["points"]
+                        label = annotation["label"]
+                        color = [c / 255.0 for c in class_to_color.get(label, (0, 0, 0))]
+                        polygon = Polygon(points, closed=True, linewidth=2, edgecolor='black', facecolor=color, alpha=0.7)
+                        ax[idx * 2 + 1].add_patch(polygon)
+                    
+                else:
+                    ax[idx * 2 + 1].imshow(image)
+                    ax[idx * 2 + 1].axis('off')
+                    ax[idx * 2 + 1].set_title(f"Selected Image with Pred:{user_selected_id}"
+                                            , fontsize = 20
+                                            )
+                    for idx, img in enumerate(selected_images.split('/')[1]):
+                        selected_img_df = df[df['image_name'] == img]
+                        ax[idx].set_title(f'{selected_images[idx]}')
+                        ax[idx].axis('off')
+                        for _, row in selected_img_df.iterrows():
+                            label = row["class"]
+                            color = [c / 255.0 for c in class_to_color.get(label)]
+                            mask = decode_rle_to_mask(row['rle'], 2048, 2048)
 
-                for annotation in annotations:
-                    points = annotation["points"]
-                    label = annotation["label"]
-                    color = [c / 255.0 for c in class_to_color.get(label, (0, 0, 0))]
-                    polygon = Polygon(points, closed=True, linewidth=2, edgecolor='black', facecolor=color, alpha=0.7)
-                    ax[idx * 2 + 1].add_patch(polygon)
+                            # mask에서 1인 값들의 좌표 추출
+                            points = np.where(mask == 1)  
+                            y_coords, x_coords = points[0], points[1]  # y, x 좌표 분리
+
+                            # 기존에는 polygon으로 plot했지만 너무 느려서 scatter로 변경, 또한 이유는 모르겠지만, 색도 어둡게 나옴
+                            ax[idx].scatter(x_coords, y_coords, s=1, color=color, label=label, alpha=0.4)
             
             except FileNotFoundError:
                 print(f"Error: File not found at {full_image_path}")
