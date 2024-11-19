@@ -5,11 +5,10 @@ wandb:
   api_key: 535c3c99189d95a763cef3eaf7e316f0b9417510
   team_name: CV_16_Segmantation
   project_name: "Hand Bone Segmentation"
-  experiment_detail: "config_lora_tset"
-
+  experiment_detail: "config_lora_b6"
 
 # image resize
-image_size: &image_size 512 #&는 앵커로, 특정값은 별칭(*)으로 저장하여 yaml 에서 해당값을 여러번 재사용할 수 있게함.
+image_size: &image_size 2048 #&는 앵커로, 특정값은 별칭(*)으로 저장하여 yaml 에서 해당값을 여러번 재사용할 수 있게함.
 
 max_epoch: &max_epoch 40
 
@@ -18,7 +17,7 @@ max_epoch: &max_epoch 40
 model:
   name: DeepLabV3PlusModel_LoRA # 모델 이름
   parameters:         # 모델 파라미터 섹션 -> 이는 segmentation_models_pytorch 공식 라이브러리의 github에서 확인.
-    encoder_name: efficientnet-b0
+    encoder_name: efficientnet-b7
     encoder_weights: imagenet
     classes: 29
 
@@ -36,7 +35,7 @@ train:
   max_epoch: *max_epoch
   image_root: "data/train/DCM"
   label_root: "data/train/outputs_json"
-  train_batch_size: 8
+  train_batch_size: 4
   num_workers : 16
   lr: 1e-3
   weight_decay: 1e-6
@@ -100,16 +99,16 @@ seed: 42
 #test 관련 
 test:
   image_root: "data/test/DCM"
-  model_path: "checkpoints/config_lora_tset"
-  model_name: "best_40epoch_0.7965.pt"
-  output_csv: "config_lora_tset.csv"
+  model_path: "checkpoints/config_lora_b6"
+  model_name: "best_1epoch_0.0168.pt"
+  output_csv: "output/config_lora_b6.csv"
 
 # Output paths
 output:
   checkpoint_dir: "../checkpoints"
   # name: "config_lora.pt"
-  output_csv: "../config_lora_tset.csv"
+  # output_csv: "../output/config_lora.csv"
 
 # checkpoint 저장 경로
-save_dir: ./checkpoints/config_lora_tset
+save_dir: ./checkpoints/config_lora_b6
 

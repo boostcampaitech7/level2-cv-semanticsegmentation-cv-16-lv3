@@ -13,7 +13,6 @@ image_size: &image_size 1024 #&는 앵커로, 특정값은 별칭(*)으로 저�
 
 max_epoch: &max_epoch 150
 
-
 # 모델명 및 사전 학습 여부
 model:
   name: UnetPlusPlus # 모델 이름
@@ -41,7 +40,6 @@ train:
   lr: 1e-3
   weight_decay: 1e-6
 
-
 # validation 관련 인자
 validation:
   val_fold: 0
@@ -62,7 +60,6 @@ loss:
   name: BCEWithLogitsLoss
   parameters: {} # dict 형태로 작성해야함
     
-
 # transform 관련
 transform:
   Resize:
@@ -83,12 +80,8 @@ transform:
     contrast_limit: 0.2
     p: 0.5
 
-
 # random seed값
 seed: 42
-
-
-
 
 #test 관련 
 test:
@@ -101,9 +94,6 @@ test:
 output:
   checkpoint_dir: "../checkpoints"
   # name: "deeplabv3_resnet101_model.pt"
-
-
-
 
 # checkpoint 저장 경로
 save_dir: ./checkpoints/Unet

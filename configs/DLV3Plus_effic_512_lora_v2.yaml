@@ -5,7 +5,7 @@ wandb:
   api_key: 535c3c99189d95a763cef3eaf7e316f0b9417510
   team_name: CV_16_Segmantation
   project_name: "Hand Bone Segmentation"
-  experiment_detail: "config_lora_tset"
+  experiment_detail: "DLV3Plus_effic_512_lora_v2"
 
 
 # image resize
@@ -29,7 +29,7 @@ lora:
     lora_alpha: 16
     lora_dropout: 0.1
     target_modules: "encoder._blocks.\\d+.(_expand_conv|_project_conv)$" # 잘 됨
-    modules_to_save: ["decoder", "encoder._conv_head"]
+    modules_to_save: ["encoder._blocks.\\d+._depthwise_conv", "decoder", "encoder._conv_head"]
 
 # train 매개변수 설정
 train:
@@ -61,7 +61,7 @@ validation:
 scheduler:
   name: MultiStepLR  # 스케줄러 이름
   parameters:        # 스케줄러 파라미터
-    milestones: [35]  # 학습률을 감소시킬 epoch 번호
+    milestones: [35, 38]  # 학습률을 감소시킬 epoch 번호
     gamma: 0.1        # 학습률 감소 비율 (기본적으로 0.1로 설정)
     last_epoch: -1     # 마지막 epoch (초기값은 -1로 설정)
 
@@ -79,19 +79,6 @@ transform:
     width: *image_size #별표(*)는 이미지 별칭으로, 재사용하기 위해 사용함
     height: *image_size
   
-  HorizontalFlip:
-    use: false
-    p: 0.5
-
-  Rotate:
-    use: false
-    limit: 45 #특정 변환의 최대값 제한 설정.
-    p: 0.7
-
-  RandomBrightnessContrast:
-    brightness_limit: 0.2
-    contrast_limit: 0.2
-    p: 0.5
 
 
 # random seed값
@@ -100,16 +87,16 @@ seed: 42
 #test 관련 
 test:
   image_root: "data/test/DCM"
-  model_path: "checkpoints/config_lora_tset"
+  model_path: "checkpoints/DLV3Plus_effic_512_lora_v2"
   model_name: "best_40epoch_0.7965.pt"
-  output_csv: "config_lora_tset.csv"
+  output_csv: "DLV3Plus_effic_512_lora_v2.csv"
 
 # Output paths
 output:
   checkpoint_dir: "../checkpoints"
   # name: "config_lora.pt"
-  output_csv: "../config_lora_tset.csv"
+  output_csv: "../DLV3Plus_effic_512_lora_v2.csv"
 
 # checkpoint 저장 경로
-save_dir: ./checkpoints/config_lora_tset
+save_dir: ./checkpoints/DLV3Plus_effic_512_lora_v2
 
