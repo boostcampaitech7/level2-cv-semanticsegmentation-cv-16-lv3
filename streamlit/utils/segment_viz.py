@@ -47,13 +47,13 @@ def viz(user_selected_id=None, cnt = '1', for_gt = True, df = False): # 4개를 
             full_json_path = data_loader.get_json_path(img_path)
             
             try:
-                image = data_loader.load_image(img_path).convert('RGB')
-                ax[idx * 2].imshow(image)
-                ax[idx * 2].axis('off')
-                ax[idx * 2].set_title(f"Selected Image: {user_selected_id}"
-                                      , fontsize=20
-                                    )
                 if for_gt:
+                    image = data_loader.load_image(img_path).convert('RGB')
+                    ax[idx * 2].imshow(image)
+                    ax[idx * 2].axis('off')
+                    ax[idx * 2].set_title(f"Selected Image: {user_selected_id}"
+                                        , fontsize=20
+                                        )
                     annotations = data_loader.load_json(full_json_path)["annotations"]
                     ax[idx * 2 + 1].imshow(image)
                     ax[idx * 2 + 1].axis('off')
@@ -69,6 +69,20 @@ def viz(user_selected_id=None, cnt = '1', for_gt = True, df = False): # 4개를 
                         ax[idx * 2 + 1].add_patch(polygon)
                     
                 else:
+                    annotations = data_loader.load_json(full_json_path)["annotations"]
+                    ax[idx * 2].imshow(image)
+                    ax[idx * 2].axis('off')
+                    ax[idx * 2].set_title(f"Selected Image with Label:{user_selected_id}"
+                                            , fontsize = 20
+                                            )
+
+                    for annotation in annotations:
+                        points = annotation["points"]
+                        label = annotation["label"]
+                        color = [c / 255.0 for c in class_to_color.get(label, (0, 0, 0))]
+                        polygon = Polygon(points, closed=True, linewidth=2, edgecolor='black', facecolor=color, alpha=0.7)
+                        ax[idx * 2].add_patch(polygon)
+
                     ax[idx * 2 + 1].imshow(image)
                     ax[idx * 2 + 1].axis('off')
                     ax[idx * 2 + 1].set_title(f"Selected Image with Pred:{user_selected_id}"
