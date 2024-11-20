@@ -91,7 +91,7 @@ def main(cfg):
         #     print(name, param.shape, param.requires_grad)
         print_trainable_parameters(model)
     else:
-        model = model_selector.get_model(cfg.model.name, False, None, **cfg.model.parameters)
+        model = model_selector.get_model(cfg.model.name, **cfg.model.parameters)
 
     if torch.cuda.device_count()>1:
         model = torch.nn.DataParallel(model)
