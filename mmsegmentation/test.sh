@@ -1,0 +1,2 @@
+# python demo/image_demo.py ../data/train/DCM/ID001/image1661130828152_R.png configs/pspnet/pspnet_r50-d8_4xb2-40k_cityscapes-512x1024.py ./pspnet_r50-d8_512x1024_40k_cityscapes_20200605_003338-2966598c.pth --device cuda:0 --out-file result.jpg
+python tools/train.py configs/segformer/segformer_mit-b5_8xb2-160k_ade20k-640x640.py
