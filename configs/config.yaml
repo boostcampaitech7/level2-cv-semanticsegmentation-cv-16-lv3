@@ -22,6 +22,7 @@ wandb:
   use_sweep: False # True 라고 적어야 사용합니다.
   sweep_path: "configs/config_sweep.yaml" 
 
+
 # 모델명 및 사전 학습 여부
 model:
   name: *model_name # 모델 이름
@@ -50,7 +51,6 @@ train:
   weight_decay: 1e-6
   channel_1: False
   patch_size: False #2048/256 = 8 즉,8 patch
-
 
 # validation 관련 인자
 validation:
@@ -101,6 +101,7 @@ transform:
 test:
   image_root: "data/test/DCM"
   output_csv: "output/submission3.csv"
+
 
 # checkpoint 저장 경로
 save_dir: ./checkpoints/config  # 기본 저장 경로

@@ -65,7 +65,7 @@ def set_wandb(configs):
     WandB 설정 및 Sweep 초기화
     """
     wandb.login(key=configs.wandb.api_key)
-
+    
     if configs.wandb.use_sweep:
         # Sweep 설정 로드
         with open(configs.wandb.sweep_path, "r") as sweep_file:
@@ -114,6 +114,13 @@ def sweep_train(configs):
     main(configs)
 
 
+def print_trainable_parameters(model):
+    # model.parameters()로 파라미터를 가져와서 그 중에서 gradient를 계산할 수 있는 파라미터만 출력
+    total_params = sum(p.numel() for p in model.parameters())
+    total_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    
+    print(f'Total parameters: {total_params}')
+    print(f'Trainable parameters: {total_trainable_params}')
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Training script for segmentation model")

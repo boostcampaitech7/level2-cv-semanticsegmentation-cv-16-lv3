@@ -42,6 +42,7 @@ def decode_rle_to_mask(rle, height, width):
 
 def inference(conf, data_loader):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    
     model = torch.load(conf.pt_dir, weights_only=False).to(device)
     model.eval()
     
