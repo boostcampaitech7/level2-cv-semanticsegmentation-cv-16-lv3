@@ -10,9 +10,6 @@ import torch.nn.functional as F
 from tqdm.auto import tqdm
 from datetime import timedelta
 from torch.utils.data import DataLoader
-from omegaconf import OmegaConf
-config_path = os.path.join('configs', 'config.yaml')
-conf = OmegaConf.load(config_path)
 
 def dice_coef(y_true, y_pred):
         y_true_f = y_true.flatten(2)
@@ -43,14 +40,13 @@ class Trainer:
         self.scheduler = scheduler
         self.criterion = criterion
         self.max_epoch = max_epoch
-        self.save_dir = save_dir
+        self.save_dir = save_dir # checkpoint 최종 저장 경로
         self.threshold = threshold
         self.val_interval = val_interval
 
 
     def save_model(self, epoch, dice_score, before_path):
-        # 최종 저장 경로
-        output_dir = osp.join(self.save_dir,conf.model_name)
+        output_dir = self.save_dir
         
         # checkpoint 저장 폴더 생성
         if not osp.isdir(output_dir):
