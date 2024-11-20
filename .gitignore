@@ -285,3 +285,8 @@ $RECYCLE.BIN/
 data/*
 output/*
 requirements.txt
+
+# mmsegmentation
+
+**/*.pth
+**/mmseg_results/*
