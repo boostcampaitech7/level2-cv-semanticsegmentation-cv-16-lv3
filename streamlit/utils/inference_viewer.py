@@ -34,9 +34,9 @@ def inference_viewer(train_image_list, test_image_list, train_max_length, test_m
     if "train_csv_path" not in st.session_state:
         st.session_state.train_csv_path = None
 
-    data_type = st.sidebar.selectbox('Select Train or Test', ['Train', 'Test'])
+    data_type = st.sidebar.selectbox('Select Train or Test', ['Test', 'Train']) # Test데이터의 inference를 볼 일이 더 많을 거 같기에 순서 바꿈
     if data_type == 'Train':
-        st.title('Train Inference Viewr')
+        st.title('Train Inference Viewer') #이름 오타 수정
         resultloader = InferenceViz('../output/train')
         csv_list = resultloader.load_csv_list()
         selected_csv = st.sidebar.selectbox('Select CSV Files', csv_list, on_change=reset_index_for_train)
@@ -62,7 +62,7 @@ def inference_viewer(train_image_list, test_image_list, train_max_length, test_m
                 st.session_state.train_csv = pd.read_csv(st.session_state.train_csv_path)
 
             img = viz(train_image_list[st.session_state.train_index_inf], cnt = '1', for_gt = False, df = st.session_state.train_csv)
-            st.image(img) # viz에서는 image를 반환하므로 pyplot에서 image로 변환
+            st.image(img, width= 680) # viz에서는 image를 반환하므로 pyplot에서 image로 변환
         else:
             st.write('Select CSV')
     
