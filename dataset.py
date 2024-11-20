@@ -8,6 +8,7 @@ import albumentations as A
 
 from torch.utils.data import Dataset
 from sklearn.model_selection import GroupKFold
+from code.utils.split_data import split_image_into_patches
 
 CLASSES = [
     'finger-1', 'finger-2', 'finger-3', 'finger-4', 'finger-5',
@@ -19,7 +20,7 @@ CLASSES = [
 ]
 
 class XRayDataset(Dataset):
-    def __init__(self, fnames, labels, image_root, label_root, fold=0, transforms=None, is_train=True, channel_1=False):
+    def __init__(self, fnames, labels, image_root, label_root, fold=0, transforms=None, is_train=True, channel_1=False, patch_size=False):
         self.transforms = A.Compose(transforms)
         self.is_train = is_train
         self.image_root = image_root
@@ -29,6 +30,7 @@ class XRayDataset(Dataset):
         self.ind2class = {v: k for k, v in self.class2ind.items()}
         self.num_classes = len(CLASSES)
         self.channel_1 = channel_1
+        self.patch_size = patch_size
         
         groups = [osp.dirname(fname) for fname in fnames]
         
@@ -96,14 +98,28 @@ class XRayDataset(Dataset):
             image = result["image"]
             label = result["mask"] if self.is_train else label
 
-        # to tenser will be done later
-        image = image.transpose(2, 0, 1)    # channel first 포맷으로 변경합니다.
-        label = label.transpose(2, 0, 1)
-        
-        image = torch.from_numpy(image).float()
-        label = torch.from_numpy(label).float()
-            
-        if self.channel_1:
+
+        # 패치 크기가 설정된 경우 이미지를 패치로 분리
+        if self.patch_size:
+            image = split_image_into_patches(image, self.patch_size)  # (num_patches, C, patch_size, patch_size)
+            label = split_image_into_patches(label, self.patch_size)  # (num_patches, C, patch_size, patch_size)
+
+            # 데이터 타입 확인 후 변환
+            if not isinstance(image, torch.Tensor):
+                image = torch.from_numpy(image).float()  # float32 변환
+            if not isinstance(label, torch.Tensor):
+                label = torch.from_numpy(label).float()
+         
+           
+        else:
+            # 채널 순서 변경
+            image = image.transpose(2, 0, 1)    # channel first 포맷으로 변경
+            label = label.transpose(2, 0, 1)
+            image = torch.from_numpy(image).float()
+            label = torch.from_numpy(label).float()
+
+        ## channel 1로 해서 gray 로 만듦.    
+        if self.channel_1: 
             # image가 (C, H, W)인 경우
             image = image[0, :, :]  # 첫 번째 채널 선택 (H, W)
 

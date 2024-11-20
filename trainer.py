@@ -10,7 +10,9 @@ import torch.nn.functional as F
 from tqdm.auto import tqdm
 from datetime import timedelta
 from torch.utils.data import DataLoader
-
+from omegaconf import OmegaConf
+config_path = os.path.join('configs', 'config.yaml')
+conf = OmegaConf.load(config_path)
 
 def dice_coef(y_true, y_pred):
         y_true_f = y_true.flatten(2)
@@ -49,14 +51,18 @@ class Trainer:
 
 
     def save_model(self, epoch, dice_score, before_path):
+        # 최종 저장 경로
+        output_dir = osp.join(self.save_dir,conf.model_name)
+        
         # checkpoint 저장 폴더 생성
-        if not osp.isdir(self.save_dir):
-            os.makedirs(self.save_dir, exist_ok=True)
+        if not osp.isdir(output_dir):
+            os.makedirs(output_dir, exist_ok=True)
 
         if before_path != "" and osp.exists(before_path):
             os.remove(before_path)
 
-        output_path = osp.join(self.save_dir, f"best_{epoch}epoch_{dice_score:.4f}.pt")
+        output_path = osp.join(output_dir, f"best_{epoch}epoch_{dice_score:.4f}.pt")
+        print("훈련된 파일 저장되는 경로: ", output_path) 
         torch.save(self.model, output_path)
         return output_path
 
@@ -142,7 +148,13 @@ class Trainer:
         ))
 
         class_dice_dict = {f"{c}'s dice score" : d for c, d in zip(self.val_loader.dataset.class2ind, dices_per_class)}
-        
+        # WandB 로깅
+        wandb.log({
+            "Validation Loss": total_loss / len(self.val_loader),  # 평균 Validation Loss
+            "Average Dice Score": avg_dice,  # 평균 Dice Score
+            **class_dice_dict,  # 클래스별 Dice Score
+            "Epoch": epoch,  # 현재 Epoch
+        })
         return avg_dice, class_dice_dict, total_loss / len(self.val_loader)
     
 

@@ -1,7 +1,7 @@
 from omegaconf import OmegaConf
 import os
 import os.path as osp
-
+import gc
 import torch
 import random
 import warnings
@@ -9,6 +9,7 @@ import numpy as np
 import albumentations as A
 import argparse
 import torch.optim as optim
+import wandb
 
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
@@ -18,11 +19,11 @@ from dataset import XRayDataset
 from code.loss_functions.loss_selector import LossSelector
 from code.scheduler.scheduler_selector import SchedulerSelector
 from code.models.model_selector import ModelSelector
-from code.utils.utils import set_seed, set_wandb,setup, print_trainable_parameters
-
+from code.utils.utils import set_seed, set_wandb, setup, print_trainable_parameters, sweep_train
+from code.utils.split_data import split_image_into_patches
 import peft
 
-warnings.filterwarnings('ignore')
+# warnings.filterwarnings('ignore')
     
 def main(cfg):
     #wandb 설정.
@@ -46,7 +47,8 @@ def main(cfg):
                                 fold=cfg.validation.val_fold,
                                 transforms=transform,
                                 is_train=True,
-                                channel_1=cfg.train.channel_1
+                                channel_1=cfg.train.channel_1,
+                                patch_size= cfg.train.patch_size
                                 )
     
     valid_dataset = XRayDataset(fnames,
@@ -56,24 +58,25 @@ def main(cfg):
                                 fold=cfg.validation.val_fold,
                                 transforms=transform,
                                 is_train=False,
-                                channel_1=cfg.train.channel_1
+                                channel_1=cfg.train.channel_1,
+                                patch_size=cfg.train.patch_size 
                                 )
     
     train_loader = DataLoader(
         dataset=train_dataset, 
-        batch_size=cfg.train.train_batch_size,
+        batch_size=None if cfg.train.patch_size else cfg.train.train_batch_size,
         shuffle=True,
         num_workers=cfg.train.num_workers,
-        drop_last=True,
+        drop_last=False if cfg.train.patch_size else True,  # patch_size 활성화 시 drop_last=False
     )
 
     # 주의: validation data는 이미지 크기가 크기 때문에 `num_wokers`는 커지면 메모리 에러가 발생할 수 있습니다.
     valid_loader = DataLoader(
         dataset=valid_dataset, 
-        batch_size=cfg.validation.val_batch_size,
+        batch_size=None if cfg.train.patch_size else cfg.validation.val_batch_size,
         shuffle=False,
         num_workers=cfg.validation.num_workers,
-        drop_last=False
+         drop_last=False,  # Validation은 drop_last=False로 유지
     )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -129,14 +132,28 @@ def main(cfg):
 
 
 if __name__=='__main__':
+    #갈비지 컬렉터를 비웁니다.
+    gc.collect()
+    torch.cuda.empty_cache()
     parser = argparse.ArgumentParser()
     
     #다른 config 를 사용할려면 터미널에 --config 붙이시면 됩니다.ex)python train.py --configs/alternative.yaml
     parser.add_argument("--config", type=str, default="configs/config.yaml")
 
+    
     args = parser.parse_args()
     
     with open(args.config, 'r') as f:
         cfg = OmegaConf.load(f)
+        print(cfg) #본인이 무엇을 config 에 정의했는지 알 수
     
-    main(cfg)
+    # WandB 설정 및 Sweep ID 반환
+    sweep_id = set_wandb(cfg)
+
+    if cfg.wandb.use_sweep and sweep_id:
+        # Sweep 실행: wandb.agent로 sweep_train 실행
+        wandb.agent(sweep_id, function=lambda: sweep_train(cfg))  # count=1로 지정하면 하나씩 실행
+    else:
+        # 일반 실행
+        main(cfg)
+    

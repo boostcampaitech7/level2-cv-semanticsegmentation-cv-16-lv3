@@ -1,4 +1,4 @@
-from .schedulers import multi_step_lr, cosine_annealing_lr,reduce_lr_on_plateau
+from .schedulers import multi_step_lr, cosine_annealing_lr
 
 
 class SchedulerSelector():
@@ -13,8 +13,7 @@ class SchedulerSelector():
     def __init__(self, optimizer) -> None:
         self.scheduler_classes = {
             "MultiStepLR" : multi_step_lr,
-            "CosineAnnealingLR" : cosine_annealing_lr,
-            "ReduceLROnPlateau":reduce_lr_on_plateau
+            "CosineAnnealingLR" : cosine_annealing_lr
         }
         self.optimizer = optimizer
 
