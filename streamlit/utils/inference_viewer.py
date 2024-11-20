@@ -4,33 +4,36 @@ import streamlit as st
 from utils.segment_viz import viz
 import os
 
-if "test_index_inf" not in st.session_state:
-    st.session_state.test_index_inf = 0
-
-if "train_index_inf" not in st.session_state:
-    st.session_state.train_index_inf = 0
-
-# csv파일을 1번만 불러오기 위해 사용
-if "test_csv" not in st.session_state:
-    st.session_state.test_csv = None
-
-if "test_csv_path" not in st.session_state:
-    st.session_state.test_csv_path = None
-
-if "train_csv" not in st.session_state:
-    st.session_state.train_csv = None
-
-if "train_csv_path" not in st.session_state:
-    st.session_state.train_csv_path = None
-
+# 인덱스 초기화 함수
 def reset_index_for_test():
-    st.session_state.test_index_inf = 0
+    if "test_index_inf" in st.session_state:
+        st.session_state.test_index_inf = 0
 
 def reset_index_for_train():
-    st.session_state.train_index_inf = 0
+    if "train_index_inf" in st.session_state:
+        st.session_state.train_index_inf = 0
 
 
 def inference_viewer(train_image_list, test_image_list, train_max_length, test_max_length):
+    if "test_index_inf" not in st.session_state:
+        st.session_state.test_index_inf = 0
+
+    if "train_index_inf" not in st.session_state:
+        st.session_state.train_index_inf = 0
+
+    # csv파일을 1번만 불러오기 위해 사용
+    if "test_csv" not in st.session_state:
+        st.session_state.test_csv = None
+
+    if "test_csv_path" not in st.session_state:
+        st.session_state.test_csv_path = None
+
+    if "train_csv" not in st.session_state:
+        st.session_state.train_csv = None
+
+    if "train_csv_path" not in st.session_state:
+        st.session_state.train_csv_path = None
+
     data_type = st.sidebar.selectbox('Select Train or Test', ['Train', 'Test'])
     if data_type == 'Train':
         st.title('Train Inference Viewr')
@@ -59,7 +62,7 @@ def inference_viewer(train_image_list, test_image_list, train_max_length, test_m
                 st.session_state.train_csv = pd.read_csv(st.session_state.train_csv_path)
 
             img = viz(train_image_list[st.session_state.train_index_inf], cnt = '1', for_gt = False, df = st.session_state.train_csv)
-            st.pyplot(img)
+            st.image(img) # viz에서는 image를 반환하므로 pyplot에서 image로 변환
         else:
             st.write('Select CSV')
     
