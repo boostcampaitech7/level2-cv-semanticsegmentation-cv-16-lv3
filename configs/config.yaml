@@ -32,14 +32,13 @@ model:
     encoder_weights: advprop #[imagenet, advprop]2개 디폴트로 있음
     classes: 29
 
-lora:
-  use: false
-  params:
-    r: 8
-    lora_alpha: 16
-    lora_dropout: 0.1
-    target_modules: "encoder._blocks.\\d+.(_expand_conv|_project_conv)$" # 잘 됨
-    modules_to_save: ["decoder", "encoder._conv_head"]
+    lora_use: true
+    lora_config:
+      r: 8
+      lora_alpha: 16
+      lora_dropout: 0.1
+      target_modules: "encoder._blocks.\\d+.(_expand_conv|_project_conv)$"
+      modules_to_save: ["decoder", "encoder._conv_head"]
 
 # train 매개변수 설정
 train:

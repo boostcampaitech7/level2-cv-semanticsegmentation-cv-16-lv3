@@ -34,8 +34,7 @@ class Trainer:
                  criterion: torch.nn.modules.loss._Loss,
                  max_epoch: int,
                  save_dir: str,
-                 val_interval: int,
-                 lora_use: bool):
+                 val_interval: int):
         self.model = model
         self.device = device
         self.train_loader = train_loader
@@ -47,7 +46,6 @@ class Trainer:
         self.save_dir = save_dir
         self.threshold = threshold
         self.val_interval = val_interval
-        self.lora_use = lora_use
 
 
     def save_model(self, epoch, dice_score, before_path):

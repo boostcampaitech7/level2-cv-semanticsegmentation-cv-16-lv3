@@ -43,7 +43,7 @@ def decode_rle_to_mask(rle, height, width):
 def inference(conf, data_loader):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = torch.load(conf.test.model_path +"/"+conf.test.model_path2 + "/" +conf.test.model_file,
-                       weights_only=True).to(device)
+                       weights_only=False).to(device)
     model.eval()
     
     rles = []
@@ -81,7 +81,7 @@ if __name__=="__main__":
     parser.add_argument("--resize", type=int, default=512, help="Size to resize images (both width and height)")
     parser.add_argument("--channel", type=int, default=3, help="set channel")
     args = parser.parse_args()
-    conf = OmegaConf.load("configs/config.yaml")
+    conf = OmegaConf.load("configs/config_lora.yaml")
     print(conf)
 
 

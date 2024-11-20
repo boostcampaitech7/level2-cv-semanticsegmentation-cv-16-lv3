@@ -21,7 +21,7 @@ from code.scheduler.scheduler_selector import SchedulerSelector
 from code.models.model_selector import ModelSelector
 from code.utils.utils import set_seed, set_wandb, setup, print_trainable_parameters, sweep_train
 from code.utils.split_data import split_image_into_patches
-import peft
+
 
 # warnings.filterwarnings('ignore')
     
@@ -84,9 +84,8 @@ def main(cfg):
 
     # model 선택
     model_selector = ModelSelector()
-    if cfg.lora.use:
-        lora_config = peft.LoraConfig(**cfg.lora.params)
-        model = model_selector.get_model(cfg.model.name, cfg.lora.use, lora_config, **cfg.model.parameters)
+    if cfg.model.parameters.lora_use:
+        model = model_selector.get_model(cfg.model.name, **cfg.model.parameters)
         # 어떻게 lora가 적용되는지 확인
         # for name, param in model.named_parameters():
         #     print(name, param.shape, param.requires_grad)
@@ -124,8 +123,7 @@ def main(cfg):
         criterion=criterion,
         max_epoch=cfg.max_epoch,
         save_dir=cfg.save_dir,
-        val_interval=cfg.validation.val_interval,
-        lora_use=cfg.lora.use
+        val_interval=cfg.validation.val_interval
     )
 
     trainer.train()
