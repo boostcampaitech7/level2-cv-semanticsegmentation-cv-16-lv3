@@ -23,6 +23,7 @@ wandb:
   use_sweep: False # True 라고 적어야 사용합니다.
   sweep_path: "configs/config_sweep.yaml" 
 
+
 # 모델명 및 사전 학습 여부
 model:
   name: *model_name # 모델 이름
@@ -30,6 +31,14 @@ model:
     encoder_name: efficientnet-b0
     encoder_weights: advprop #[imagenet, advprop]2개 디폴트로 있음
     classes: 29
+
+    lora_use: false
+    lora_config:
+      r: 8
+      lora_alpha: 16
+      lora_dropout: 0.1
+      target_modules: "encoder._blocks.\\d+.(_expand_conv|_project_conv)$"
+      modules_to_save: ["decoder", "encoder._conv_head"]
 
 # train 매개변수 설정
 train:
@@ -42,7 +51,6 @@ train:
   weight_decay: 1e-6
   channel_1: False
   patch_size: False #2048/256 = 8 즉,8 patch
-
 
 # validation 관련 인자
 validation:
@@ -95,10 +103,6 @@ transform:
   #   p: 0.5 # 적용확률
 
 
-
-
-
-
 #test 관련 
 test:
   image_root: "data/test/DCM"
@@ -111,9 +115,6 @@ test:
 output:
   checkpoint_dir: "../checkpoints"
   # name: "deeplabv3_resnet101_model.pt"
-
-
-
 
 # checkpoint 저장 경로
 save_dir: ./checkpoints  # 기본 저장 경로
