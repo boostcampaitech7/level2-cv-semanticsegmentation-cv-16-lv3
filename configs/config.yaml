@@ -18,7 +18,6 @@ wandb:
   api_key: ##본인의 api 키 적으시면 됩니다.
   team_name: CV_SOTA
   project_name: "Segmentation_project"
-  experiment_detail: 진행하는 실험의 이름
   exp_name: *model_name
   use_sweep: False # True 라고 적어야 사용합니다.
   sweep_path: "configs/config_sweep.yaml" 
@@ -40,6 +39,7 @@ model:
       target_modules: "encoder._blocks.\\d+.(_expand_conv|_project_conv)$"
       modules_to_save: ["decoder", "encoder._conv_head"]
 
+
 # train 매개변수 설정
 train:
   max_epoch: *max_epoch
@@ -60,12 +60,14 @@ validation:
   threshold: 0.5
   val_batch_size: 4
 
+
 # 스케줄러 관련 설정
 scheduler:
   name: CosineAnnealingLR  # 스케줄러 이름
   parameters:             # 스케줄러 파라미터
     T_max: *max_epoch
     eta_min: 1e-6
+
 
 # loss 관련설정
 loss:
@@ -94,28 +96,15 @@ transform:
     contrast_limit: 0.2
     p: 0.5
 
-  # ColorJitter:
-  #   use: False
-  #   brightness: 0.2 # 밝기
-  #   contrast: 0.2 # 대비
-  #   saturation: 0.2 # 채도
-  #   hue: 0.1 # 색조
-  #   p: 0.5 # 적용확률
-
 
 #test 관련 
 test:
   image_root: "data/test/DCM"
-  model_path: "checkpoints"
-  model_path2: *model_name #model_path/model_path2/model_name 으로 model 가져옴.
-  model_file: "best_198epoch_0.9518.pt"
   output_csv: "output/submission3.csv"
 
-# Output paths
-output:
-  checkpoint_dir: "../checkpoints"
-  # name: "deeplabv3_resnet101_model.pt"
 
 # checkpoint 저장 경로
-save_dir: ./checkpoints  # 기본 저장 경로
+save_dir: ./checkpoints/config  # 기본 저장 경로
 
+# 학습이 끝나고 나오는 pt 저장경로를 복사붙여넣기 하면 됩니다.
+pt_dir: ./checkpoints/config/best_1epoch_0.0031.pt
