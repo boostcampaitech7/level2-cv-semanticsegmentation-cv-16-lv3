@@ -1,4 +1,4 @@
-from .base_model import UnetModel, DeepLabV3PlusModel,UnetPlusPlus, DeepLabV3PlusModel_channel0, DeepLabV3PlusModel_LoRA
+from .base_model import UnetModel, DeepLabV3PlusModel,UnetPlusPlus, DeepLabV3PlusModel_channel0
 
 
 class ModelSelector():
@@ -14,8 +14,7 @@ class ModelSelector():
             "Unet" : UnetModel,
             "DeepLabV3Plus": DeepLabV3PlusModel,
             "DeepLabV3PlusModel_channel0": DeepLabV3PlusModel_channel0,
-            "UnetPlusPlus": UnetPlusPlus,
-            "DeepLabV3PlusModel_LoRA": DeepLabV3PlusModel_LoRA
+            "UnetPlusPlus": UnetPlusPlus
         }
 
     

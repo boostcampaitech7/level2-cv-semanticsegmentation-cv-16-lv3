@@ -7,7 +7,7 @@ image_size: &image_size 512 #&는 앵커로, 특정값은 별칭(*)으로 저장
 max_epoch: &max_epoch 2
 
 #model_name()
-model_name: &model_name Unet
+model_name: &model_name DeepLabV3PlusModel
 
 # random seed값
 seed: 42
@@ -94,7 +94,7 @@ transform:
     brightness_limit: 0.2
     contrast_limit: 0.2
     p: 0.5
-    
+
   # ColorJitter:
   #   use: False
   #   brightness: 0.2 # 밝기
