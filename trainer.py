@@ -146,7 +146,13 @@ class Trainer:
         ))
 
         class_dice_dict = {f"{c}'s dice score" : d for c, d in zip(self.val_loader.dataset.class2ind, dices_per_class)}
-        
+        # WandB 로깅
+        wandb.log({
+            "Validation Loss": total_loss / len(self.val_loader),  # 평균 Validation Loss
+            "Average Dice Score": avg_dice,  # 평균 Dice Score
+            **class_dice_dict,  # 클래스별 Dice Score
+            "Epoch": epoch,  # 현재 Epoch
+        })
         return avg_dice, class_dice_dict, total_loss / len(self.val_loader)
     
 
