@@ -7,7 +7,7 @@ import random
 import warnings
 import numpy as np
 import albumentations as A
-
+import yaml
 import argparse
 import torch.optim as optim
 
@@ -61,37 +61,58 @@ def set_seed(seed):
 
 
 def set_wandb(configs):
+    """
+    WandB 설정 및 Sweep 초기화
+    """
     wandb.login(key=configs.wandb.api_key)
-    
-    wandb.init(
-        entity=configs.wandb.team_name, #팀  wandb page생기면.
-        project=configs.wandb.project_name,
-        name=configs.wandb.exp_name, #진행하는 실험의 이름? 뭔지 모르겠음.
-        config={
-                'model': configs.model.name,
-                'resize': configs.image_size,
-                'batch_size': configs.train.train_batch_size,
-                'loss_name': configs.loss.name,
-                'scheduler_name': configs.scheduler.name,
-                'learning_rate': configs.train.lr,
-                'epoch': configs.max_epoch
-            }
-    )
-    # Sweep 활성화 여부를 확인
+
     if configs.wandb.use_sweep:
-        # wandb sweep에서 전달된 파라미터를 가져옴
-        config_sweep = wandb.config
-        
-        # Sweep에서 전달된 값으로 configs 업데이트 (수정된 부분)
-        configs.train.lr = config_sweep.get("train_lr", configs.train.lr)  
-        configs.train.train_batch_size = config_sweep.get("train_batch_size", configs.train.train_batch_size)  
-        configs.max_epoch = config_sweep.get("max_epoch", configs.max_epoch)  
-        configs.model.name = config_sweep.get("model_name", configs.model.name)  
-        configs.model.parameters.encoder_name = config_sweep.get("model_encoder_name", configs.model.parameters.encoder_name)  
-        configs.model.parameters.encoder_weights = config_sweep.get("model_encoder_weight",configs.model.parameters.encoder_weights)
-        configs.loss.name = config_sweep.get("loss_name", configs.loss.name)  
-        configs.scheduler.name = config_sweep.get("scheduler_name", configs.scheduler.name)  
-  
+        # Sweep 설정 로드
+        with open(configs.wandb.sweep_path, "r") as sweep_file:
+            config_sweep = yaml.safe_load(sweep_file)
+
+        # Sweep ID 생성
+        sweep_id = wandb.sweep(config_sweep, project=configs.wandb.project_name)
+        return sweep_id
+    else:
+        # 일반 WandB 초기화
+        wandb.init(
+            entity=configs.wandb.team_name,
+            project=configs.wandb.project_name,
+            name=configs.wandb.exp_name,
+            config={
+                "model": configs.model.name,
+                "resize": configs.image_size,
+                "batch_size": configs.train.train_batch_size,
+                "loss_name": configs.loss.name,
+                "scheduler_name": configs.scheduler.name,
+                "learning_rate": configs.train.lr,
+                "epoch": configs.max_epoch,
+            },
+        )
+        return None
+
+
+def sweep_train(configs):
+    """
+    Sweep에서 하이퍼파라미터 설정에 따라 학습 실행
+    """
+    # WandB 초기화 (sweep 실행 시)
+    wandb.init()
+    # WandB Sweep 설정 값 가져오기
+    configs.train.lr = wandb.config.get("train_lr", configs.train.lr)
+    configs.train.train_batch_size = wandb.config.get("train_batch_size", configs.train.train_batch_size)
+    configs.max_epoch = wandb.config.get("max_epoch", configs.max_epoch)
+    configs.model.name = wandb.config.get("model_name", configs.model.name)
+    configs.model.parameters.encoder_name = wandb.config.get("model_encoder_name", configs.model.parameters.encoder_name)
+    configs.model.parameters.encoder_weights = wandb.config.get("model_encoder_weight", configs.model.parameters.encoder_weights)
+    configs.loss.name = wandb.config.get("loss_name", configs.loss.name)
+    configs.scheduler.name = wandb.config.get("scheduler_name", configs.scheduler.name)
+
+    # 학습 시작
+    from train import main
+    main(configs)
+
 
 
 def parse_args():
