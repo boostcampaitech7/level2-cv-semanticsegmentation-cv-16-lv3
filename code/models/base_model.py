@@ -13,7 +13,16 @@ class UnetModel(nn.Module):
         self.model = smp.Unet(**model_parameters)  # default로 smp 라이브러리 사용
 
         if model_parameters.get("torchseg_use", False):  # torchseg_use가 True일 경우에만 torchseg 라이브러리 사용
-            self.model = torchseg.Unet(**model_parameters)
+            encoder_depth = len(torchseg.encoders.TIMM_ENCODERS[model_parameters["encoder_name"]]['channels'])
+            if encoder_depth == 4:  # encoder의 depth가 4일 경우 파라미터를 수정해야함
+                model_parameters["encoder_depth"] = 4
+                model_parameters["decoder_channel"] = [256, 128, 64, 32]
+                model_parameters["head_upsampling"] = 2
+                self.model = torchseg.Unet(**model_parameters)
+            elif encoder_depth == 5:  # encoder의 depth가 기본적으로 5여서 수정할 필요 없음
+                self.model = torchseg.Unet(**model_parameters)
+            else:  # encoder의 depth가 3이거나 6인 경우는 에러 나오게 설정했음
+                raise(ValueError(f" encoder의 depth가 {encoder_depth}인 경우는 지원하지 않습니다."))
         
         
         if model_parameters.get("lora_use", False):  
@@ -33,7 +42,16 @@ class DeepLabV3PlusModel(nn.Module):
         self.model = smp.DeepLabV3Plus(**model_parameters)  # default로 smp 라이브러리 사용
 
         if model_parameters.get("torchseg_use", False):  # torchseg_use가 True일 경우에만 torchseg 라이브러리 사용
-            self.model = torchseg.DeepLabV3Plus(**model_parameters)
+                encoder_depth = len(torchseg.encoders.TIMM_ENCODERS[model_parameters["encoder_name"]]['channels'])
+                if encoder_depth == 4:  # encoder의 depth가 4일 경우 파라미터를 수정해야함
+                    model_parameters["encoder_depth"] = 4
+                    model_parameters["decoder_channel"] = [256, 128, 64, 32]
+                    model_parameters["head_upsampling"] = 2
+                    self.model = torchseg.Unet(**model_parameters)
+                elif encoder_depth == 5:  # encoder의 depth가 기본적으로 5여서 수정할 필요 없음
+                    self.model = torchseg.Unet(**model_parameters)
+                else:  # encoder의 depth가 3이거나 6인 경우는 에러 나오게 설정했음
+                    raise(ValueError(f" encoder의 depth가 {encoder_depth}인 경우는 지원하지 않습니다."))
 
         if model_parameters.get("lora_use", False):  
             lora_config = model_parameters.get("lora_config")
