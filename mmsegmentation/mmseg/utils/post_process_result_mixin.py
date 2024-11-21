@@ -52,11 +52,14 @@ class PostProcessResultMixin:
                         i_seg_logits = i_seg_logits.flip(dims=(3, ))
                     else:
                         i_seg_logits = i_seg_logits.flip(dims=(2, ))
-
-                # resize as original shape
+           
+                ori_shape = img_meta['ori_shape']  # (2048, 2048)
+                scale_factor = img_meta['scale_factor']  #
+                scaled_shape = tuple(int(ori_shape[i] * scale_factor[i]) for i in range(len(ori_shape)))
+                
                 i_seg_logits = resize(
                     i_seg_logits,
-                    size=img_meta['ori_shape'],
+                    size=scaled_shape,#img_meta['ori_shape'],
                     mode='bilinear',
                     align_corners=self.align_corners,
                     warning=False).squeeze(0)

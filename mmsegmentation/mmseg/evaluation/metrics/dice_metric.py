@@ -6,6 +6,7 @@ from mmseg.registry import  METRICS
 from mmengine.evaluator import BaseMetric
 from mmengine.logging import MMLogger, print_log
 from mmsegmentation.configs._base_.datasets.XRayDataset import  CLASSES
+
 @METRICS.register_module()
 class DiceMetric(BaseMetric):
     def __init__(self,
@@ -18,6 +19,7 @@ class DiceMetric(BaseMetric):
     def dice_coef(y_true, y_pred):
         y_true_f = y_true.flatten(-2)
         y_pred_f = y_pred.flatten(-2)
+
         intersection = torch.sum(y_true_f * y_pred_f, -1)
 
         eps = 0.0001
@@ -33,10 +35,11 @@ class DiceMetric(BaseMetric):
             data_batch (dict): A batch of data from the dataloader.
             data_samples (Sequence[dict]): A batch of outputs from the model.
         """
+        
+            
         for data_sample in data_samples:
             pred_label = data_sample['pred_sem_seg']['data']
-
-            label = data_sample['gt_sem_seg']['data'].to(pred_label)
+            label = data_sample['gt_sem_seg']['data'].to(pred_label)   
             self.results.append(
                 self.dice_coef(label, pred_label)
             )

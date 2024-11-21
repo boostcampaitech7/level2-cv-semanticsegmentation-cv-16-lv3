@@ -9,6 +9,8 @@ from mmseg.registry import DATASETS, TRANSFORMS, MODELS, METRICS
 from mmseg.datasets import BaseSegDataset
 
 from mmcv.transforms import BaseTransform
+import warnings
+warnings.filterwarnings("ignore", message=".*Please pay attention your ground truth.*")
 
 IMAGE_ROOT = "data/train/DCM/"
 LABEL_ROOT = "data/train/outputs_json/"
@@ -91,7 +93,6 @@ class XRayDataset(BaseSegDataset):
                 seg_map_path=os.path.join(LABEL_ROOT, ann_path),
             )
             data_list.append(data_info)
-
         return data_list
     
 
@@ -99,9 +100,11 @@ class XRayDataset(BaseSegDataset):
 class LoadXRayAnnotations(BaseTransform):
     def transform(self, result):
         label_path = result["seg_map_path"]
-
-        image_size = (2048, 2048)
-
+        if 'scale' in result:
+            image_size = result['scale']
+        else:
+            image_size = result['ori_shape']
+        # print(image_size)
         # process a label of shape (H, W, NC)
         label_shape = image_size + (len(CLASSES), )
         label = np.zeros(label_shape, dtype=np.uint8)
@@ -121,9 +124,7 @@ class LoadXRayAnnotations(BaseTransform):
             class_label = np.zeros(image_size, dtype=np.uint8)
             cv2.fillPoly(class_label, [points], 1)
             label[..., class_ind] = class_label
-
         result["gt_seg_map"] = label
-
         return result
     
 @TRANSFORMS.register_module()
