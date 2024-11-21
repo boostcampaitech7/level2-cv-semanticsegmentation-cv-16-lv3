@@ -285,3 +285,4 @@ $RECYCLE.BIN/
 data/*
 output/*
 requirements.txt
+**/clahe_dataset
