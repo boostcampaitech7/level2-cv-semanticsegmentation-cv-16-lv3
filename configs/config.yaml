@@ -41,7 +41,7 @@ model:
     
     torchseg_use: false  # torchseg 라이브러리 사용 유무/ 디폴트는 사용안함
     transformer_use: false  # encoder로 transformer 계열을 사용할 경우 true로 설정해야함
-    img_size: *image_size
+    img_size: *image_size  # encoder로 transformer 계열을 사용할 경우 input image size를 설정해야함
 
 
 # train 매개변수 설정
