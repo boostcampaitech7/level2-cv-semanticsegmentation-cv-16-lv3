@@ -27,6 +27,7 @@ wandb:
 model:
   name: *model_name # 모델 이름
   parameters:         # 모델 파라미터 섹션 -> 이는 segmentation_models_pytorch 공식 라이브러리의 github에서 확인.
+    torchseg_use: false  # torchseg 라이브러리 사용 유무/ 디폴트는 사용안함
     encoder_name: efficientnet-b0
     encoder_weights: advprop #[imagenet, advprop]2개 디폴트로 있음
     classes: 29
