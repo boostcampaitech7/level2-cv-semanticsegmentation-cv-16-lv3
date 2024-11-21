@@ -40,7 +40,7 @@ jsons = {
     for fname in files
     if os.path.splitext(fname)[1].lower() == ".json"
 }
-
+IMAGE_COUNT = len(pngs)
 pngs = sorted(pngs)
 jsons = sorted(jsons)
 
@@ -102,8 +102,10 @@ class LoadXRayAnnotations(BaseTransform):
         label_path = result["seg_map_path"]
         if 'scale' in result:
             image_size = result['scale']
+            # print(image_size)
         else:
-            image_size = result['ori_shape']
+            image_size = (1024, 1024)
+            
         # print(image_size)
         # process a label of shape (H, W, NC)
         label_shape = image_size + (len(CLASSES), )

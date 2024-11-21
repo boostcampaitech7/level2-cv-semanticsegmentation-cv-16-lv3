@@ -1,10 +1,59 @@
-
 # Train Segformer Mit B3
 _base_ = [
     "../configs/_base_/models/segformer_mit-b0.py",
-    "../mmseg/datasets/XRayDataset.py",
     "../configs/_base_/default_runtime.py"
 ]
+
+# dataset settings
+dataset_type = 'XRayDataset'
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='LoadXRayAnnotations'),
+    dict(type='Resize', scale=(1024, 1024)),
+    dict(type='TransposeAnnotations'),
+    dict(type='PackSegInputs')
+]
+val_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='Resize', scale=(1024, 1024)),
+    # add loading annotation after ``Resize`` because ground truth
+    # does not need to do resize data transform
+    dict(type='LoadXRayAnnotations'),
+    dict(type='TransposeAnnotations'),
+    dict(type='PackSegInputs')
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='Resize', scale=(1024, 1024)),
+    dict(type='PackSegInputs')
+]
+
+train_dataloader = dict(
+    batch_size=1,
+    num_workers=2,
+    persistent_workers=True,
+    sampler=dict(type='InfiniteSampler', shuffle=True),
+    dataset=dict(
+        type=dataset_type,
+        is_train=True,
+        pipeline=train_pipeline
+    )
+)
+val_dataloader = dict(
+    batch_size=1,
+    num_workers=2,
+    sampler=dict(type='DefaultSampler', shuffle=False),
+    dataset=dict(
+        type=dataset_type,
+        is_train=False,
+        pipeline=val_pipeline
+    )
+)
+test_dataloader = val_dataloader
+
+val_evaluator = dict(type='DiceMetric')
+test_evaluator = val_evaluator
+
 
 data_preprocessor = dict(
     type='SegDataPreProcessor',
@@ -59,20 +108,14 @@ param_scheduler = [
     )
 ]
 # training schedule for 20k
-train_cfg = dict(type='IterBasedTrainLoop', max_iters=20000, val_interval=2000)
-# dict(
-#     type='EpochBasedTrainLoop',
-#     max_epochs=2,  # 총 epoch 수
-#     val_interval=1  # 검증 주기 (매 epoch마다)
-#     )
-#dict(type='IterBasedTrainLoop', max_iters=20000, val_interval=2000)
+train_cfg = dict(type='IterBasedTrainLoop', max_iters=600, val_interval=1)
 val_cfg = dict(type='ValLoop')
 test_cfg = dict(type='TestLoop')
 default_hooks = dict(
     timer=dict(type='IterTimerHook'),
-    logger=dict(type='LoggerHook', interval=80, log_metric_by_epoch=False),
+    logger=dict(type='LoggerHook', interval=50, log_metric_by_epoch=False),
     param_scheduler=dict(type='ParamSchedulerHook'),
-    checkpoint=dict(type='CheckpointHook', by_epoch=False, interval=1),
+    checkpoint=dict(type='CheckpointHook', by_epoch=False, interval=600),
     sampler_seed=dict(type='DistSamplerSeedHook'),
     visualization=dict(type='SegVisualizationHook')
 )
