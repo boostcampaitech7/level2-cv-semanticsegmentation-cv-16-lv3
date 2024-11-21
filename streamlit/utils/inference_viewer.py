@@ -54,14 +54,16 @@ def inference_viewer(train_image_list, test_image_list, train_max_length, test_m
                     st.session_state.train_index_inf -= 2
                 else:
                     st.write("No previous images available.")
-                    
+
+            # slider를 추가하여 밝기를 조절하는 기능 추가
+            selected_alpha = st.sidebar.slider("Select Scatter Alpha", min_value = 0.1, max_value = 1.0, value= 0.7, step= 0.1)
             if st.session_state.train_csv_path is None:
                 st.session_state.train_csv_path = os.path.join('../output/train', selected_csv)
         
             if st.session_state.train_csv is None and st.session_state is not None:
                 st.session_state.train_csv = pd.read_csv(st.session_state.train_csv_path)
 
-            img = viz(train_image_list[st.session_state.train_index_inf], cnt = '1', for_gt = False, df = st.session_state.train_csv)
+            img = viz(train_image_list[st.session_state.train_index_inf], cnt = '1', for_gt = False, df = st.session_state.train_csv, alpha = selected_alpha)
             st.image(img, width= 680) # viz에서는 image를 반환하므로 pyplot에서 image로 변환
         else:
             st.write('Select CSV')
@@ -84,13 +86,16 @@ def inference_viewer(train_image_list, test_image_list, train_max_length, test_m
                     st.session_state.test_index_inf -= 2
                 else:
                     st.write("No previous images available.")
+
+            # slider를 추가하여 밝기를 조절하는 기능 추가
+            selected_alpha = st.sidebar.slider("Select Scatter Alpha", min_value = 0.1, max_value = 1.0, value= 0.7, step= 0.1)
             if st.session_state.test_csv_path is None:
                 st.session_state.test_csv_path = os.path.join('../output/test', selected_csv)
         
             if st.session_state.test_csv is None and st.session_state is not None:
                 st.session_state.test_csv = pd.read_csv(st.session_state.test_csv_path)
 
-            img = resultloader.inference_viz(st.session_state.test_csv, test_image_list[st.session_state.test_index_inf])
+            img = resultloader.inference_viz(st.session_state.test_csv, test_image_list[st.session_state.test_index_inf], alpha = selected_alpha)
             st.pyplot(img)
         else:
             st.write('Select CSV')

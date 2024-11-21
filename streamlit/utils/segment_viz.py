@@ -28,7 +28,7 @@ CLASSES = [
 ]
 class_to_color = {cls: tuple(color) for cls, color in zip(CLASSES, PALETTE)}
 
-def viz(user_selected_id=None, cnt = '1', for_gt = True, df = False): # 4개를 볼때, legend가 중복되어 4개가 나오는 것을 막기 위해 cnt인자를 추가
+def viz(user_selected_id=None, cnt = '1', for_gt = True, df = False, alpha = 0.4): # 4개를 볼때, legend가 중복되어 4개가 나오는 것을 막기 위해 cnt인자를 추가
     data_loader = DataLoader("../data/")
     pngs = data_loader.get_image_list()
     available_ids = list(set(img_path.split('/')[0] for img_path in pngs))
@@ -37,7 +37,7 @@ def viz(user_selected_id=None, cnt = '1', for_gt = True, df = False): # 4개를 
     if user_selected_id is None or user_selected_id not in available_ids:
         user_selected_id = random.choice(available_ids)
 
-    selected_images = [img for img in pngs if img.startswith(user_selected_id)] # ID/o39939.png
+    selected_images = [img for img in pngs if img.startswith(user_selected_id)] 
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), constrained_layout = True) # constrained_layout 추가하여 여백을 줄임
     ax = ax.flatten()
 
@@ -98,12 +98,9 @@ def viz(user_selected_id=None, cnt = '1', for_gt = True, df = False): # 4개를 
 
                             # mask에서 1인 값들의 좌표 추출
                             points = np.where(mask == 1) 
+                            y_coords, x_coords = points[0], points[1]
 
-                            #### scatter용 #### 
-                            y_coords, x_coords = points[0], points[1]  # y, x 좌표 분리
-
-                            # 기존에는 polygon으로 plot했지만 너무 느려서 scatter로 변경, 또한 이유는 모르겠지만, 색도 어둡게 나옴
-                            ax[idx * 2 + 1].scatter(x_coords, y_coords, s=0.1, color=color, label=label, alpha=0.4)
+                            ax[idx * 2 + 1].scatter(x_coords, y_coords, s=1/2048, marker = '.', color=color, label=label, alpha=alpha)
             
             except FileNotFoundError:
                 print(f"Error: File not found at {full_image_path}")
