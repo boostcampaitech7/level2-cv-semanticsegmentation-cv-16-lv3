@@ -73,6 +73,7 @@ class Trainer:
                 if self.fp16:
                     # AMP 적용: autocast로 감싸기
                     with amp.autocast():
+                        outputs = self.model(images)
                         loss = self.criterion(outputs, masks)
                     self.optimizer.zero_grad()
                     # Scaler를 사용해 그래디언트 계산 및 업데이트
@@ -81,6 +82,7 @@ class Trainer:
                     self.scaler.update()
                     
                 else:
+                    outputs = self.model(images)
                     loss = self.criterion(outputs, masks)
                     self.optimizer.zero_grad()
                     loss.backward()
