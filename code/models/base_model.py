@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import segmentation_models_pytorch as smp
 import peft
-
+    
 class UnetModel(nn.Module):
     """
     Base Model Unet
@@ -21,19 +21,31 @@ class UnetModel(nn.Module):
     
 class DeepLabV3PlusModel(nn.Module):
     """
-    Base Model DeepLabV3Plus
+    Base Model DeepLabV3Plus with optional LoRA
     """
     def __init__(self, **model_parameters):
         super(DeepLabV3PlusModel, self).__init__()
         self.model = smp.DeepLabV3Plus(**model_parameters)
-
-        if model_parameters.get("lora_use", False):  
-            lora_config = model_parameters.get("lora_config")
-            lora_config = peft.LoraConfig(**lora_config)
-            self.model = peft.get_peft_model(self.model, lora_config)
+    
     
     def forward(self, x: torch.Tensor):
         return self.model(x)
+
+
+    def load_pretrained_weights(self, checkpoint_path: str):
+        """
+        Load pretrained weights from checkpoint
+        Args:
+            checkpoint_path (str): Path to the checkpoint file
+        """
+        self.model = torch.load(checkpoint_path)
+        
+
+    def apply_lora(self, lora_config: dict):
+
+        lora_config = peft.LoraConfig(**lora_config)
+        self.model = peft.get_peft_model(self.model, lora_config)
+        
 
     
 class DeepLabV3PlusModel_channel0(nn.Module):

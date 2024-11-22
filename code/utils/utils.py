@@ -59,7 +59,6 @@ def set_seed(seed):
     torch.backends.cudnn.benchmark = False
 
 
-
 def set_wandb(configs):
     """
     WandB 설정 및 Sweep 초기화
@@ -91,6 +90,21 @@ def set_wandb(configs):
             },
         )
         return None
+    
+    
+def print_trainable_parameters(model):
+    # 모델의 모든 파라미터와 학습 가능한 파라미터 수를 계산
+    total_params = sum(p.numel() for p in model.parameters())
+    total_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    
+    # 학습 가능한 파라미터의 비율 계산 (퍼센트로)
+    trainable_ratio = (total_trainable_params / total_params) * 100
+    
+    # 결과 출력
+    print(f'Total parameters: {total_params}')
+    print(f'Trainable parameters: {total_trainable_params}')
+    print(f'Trainable parameters ratio: {trainable_ratio:.2f}%')
+
 
 
 def sweep_train(configs):
@@ -113,14 +127,6 @@ def sweep_train(configs):
     from train import main
     main(configs)
 
-
-def print_trainable_parameters(model):
-    # model.parameters()로 파라미터를 가져와서 그 중에서 gradient를 계산할 수 있는 파라미터만 출력
-    total_params = sum(p.numel() for p in model.parameters())
-    total_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    
-    print(f'Total parameters: {total_params}')
-    print(f'Trainable parameters: {total_trainable_params}')
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Training script for segmentation model")
