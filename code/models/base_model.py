@@ -10,7 +10,7 @@ class UnetModel(nn.Module):
     def __init__(self, **model_parameters):
         super(UnetModel, self).__init__()
         self.model = smp.Unet(**model_parameters)
-        
+
     def forward(self, x: torch.Tensor):
         return self.model(x)
     
@@ -69,7 +69,7 @@ class UnetPlusPlus(nn.Module):
     def __init__(self, **model_parameters):
         super(UnetPlusPlus, self).__init__()
         self.model = smp.UnetPlusPlus(**model_parameters)
-        
+
     def forward(self, x: torch.Tensor):
         return self.model(x)
 

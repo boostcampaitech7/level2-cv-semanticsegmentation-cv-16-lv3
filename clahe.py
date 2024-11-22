@@ -63,24 +63,25 @@ class Dataset:
             result = self.transforms(image=image)
             image = result["image"]
 
-        return os.path.basename(image_name), image, os.path.basename(label_name) if label_name else None, label_path
+        return image_name, image, label_name, label_path
 
 def save_clahe_dataset(dataset, dataset_type="train", include_json=True):
     dcm_subdir = os.path.join(output_dir, dataset_type, "DCM")
     json_subdir = os.path.join(output_dir, dataset_type, "outputs_json") if include_json else None
 
-    os.makedirs(dcm_subdir, exist_ok=True)
-    if include_json:
-        os.makedirs(json_subdir, exist_ok=True)
 
     for image_name, image, label_name, label_path in tqdm(dataset, desc=f"Processing {dataset_type} dataset"):
+        dcm_save_path = os.path.join(dcm_subdir, os.path.dirname(image_name))
+        os.makedirs(dcm_save_path, exist_ok=True)
+        
         image_clahe = apply_clahe(image)
-        image_save_path = os.path.join(dcm_subdir, image_name)
+        image_save_path = os.path.join(dcm_save_path, os.path.basename(image_name))
         cv2.imwrite(image_save_path, image_clahe)
 
         if include_json and label_path:
-            label_save_path = os.path.join(json_subdir, label_name)
-            shutil.copy(label_path, label_save_path)
+            json_save_path = os.path.join(json_subdir, os.path.dirname(label_name))
+            os.makedirs(json_save_path, exist_ok=True)
+            shutil.copy(label_path, os.path.join(json_save_path, os.path.basename(label_name)))
 
 resize_tf = Resize(512, 512)
 

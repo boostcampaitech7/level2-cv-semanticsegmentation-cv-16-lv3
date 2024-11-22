@@ -35,13 +35,20 @@ model:
     # pt 파일 불러와서 이어서 학습합니다. 사용하지 않을 경우 null, 할 경우 pt 파일 경로
     check_dir: null
 
-    lora_use: false
+    lora_use: False
     lora_config:
       r: 8
       lora_alpha: 16
       lora_dropout: 0.1
       target_modules: "encoder._blocks.\\d+.(_expand_conv|_project_conv)$"
       modules_to_save: ["decoder", "encoder._conv_head"]
+    
+    #  torchseg에서 지원하는 인코더를 확인하려면 https://github.com/isaaccorley/torchseg/blob/main/torchseg/encoders/supported.py 에서 확인
+    #  또는
+    #  torchseg.list_encoders()로 확인 가능
+    library_type: smp  # [smp, torchseg] 둘 중 하나 입력
+    transformer_use: False  # encoder로 transformer 계열을 사용할 경우 True로 설정해야함
+    img_size: *image_size  # encoder로 transformer 계열을 사용할 경우 input image size를 설정해야함, 수정할 필요X
 
 
 # train 매개변수 설정
