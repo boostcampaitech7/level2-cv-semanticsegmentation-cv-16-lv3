@@ -10,6 +10,7 @@ import torch.nn.functional as F
 from tqdm.auto import tqdm
 from datetime import timedelta
 from torch.utils.data import DataLoader
+import torch.cuda.amp as amp
 
 def dice_coef(y_true, y_pred):
         y_true_f = y_true.flatten(2)
@@ -31,7 +32,8 @@ class Trainer:
                  criterion: torch.nn.modules.loss._Loss,
                  max_epoch: int,
                  save_dir: str,
-                 val_interval: int):
+                 val_interval: int,
+                 fp16: bool):
         self.model = model
         self.device = device
         self.train_loader = train_loader
@@ -43,7 +45,8 @@ class Trainer:
         self.save_dir = save_dir # checkpoint 최종 저장 경로
         self.threshold = threshold
         self.val_interval = val_interval
-
+        self.fp16 = fp16
+        self.scaler = amp.GradScaler() # AMP
 
     def save_model_new(self, epoch, dice_score):
         output_dir = self.save_dir
@@ -66,11 +69,22 @@ class Trainer:
             for images, masks in self.train_loader:
                 images, masks = images.to(self.device), masks.to(self.device)
                 outputs = self.model(images)
-
-                loss = self.criterion(outputs, masks)
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
+                
+                if self.fp16:
+                    # AMP 적용: autocast로 감싸기
+                    with amp.autocast():
+                        loss = self.criterion(outputs, masks)
+                    self.optimizer.zero_grad()
+                    # Scaler를 사용해 그래디언트 계산 및 업데이트
+                    self.scaler.scale(loss).backward()
+                    self.scaler.step(self.optimizer)
+                    self.scaler.update()
+                    
+                else:
+                    loss = self.criterion(outputs, masks)
+                    self.optimizer.zero_grad()
+                    loss.backward()
+                    self.optimizer.step()
 
                 total_loss += loss.item()
                 pbar.update(1)
