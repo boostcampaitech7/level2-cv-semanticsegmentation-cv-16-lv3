@@ -9,7 +9,7 @@ class UnetModel(nn.Module):
     """
     def __init__(self, **model_parameters):
         super(UnetModel, self).__init__()
-        self.model = smp.Unet(**model_parameters)  # default로 smp 라이브러리 사용
+        self.model = smp.Unet(**model_parameters)
 
         if model_parameters.get("lora_use", False):  
             lora_config = model_parameters.get("lora_config")
@@ -25,7 +25,7 @@ class DeepLabV3PlusModel(nn.Module):
     """
     def __init__(self, **model_parameters):
         super(DeepLabV3PlusModel, self).__init__()
-        self.model = smp.DeepLabV3Plus(**model_parameters)  # default로 smp 라이브러리 사용
+        self.model = smp.DeepLabV3Plus(**model_parameters)
 
         if model_parameters.get("lora_use", False):  
             lora_config = model_parameters.get("lora_config")
@@ -43,7 +43,7 @@ class DeepLabV3PlusModel_channel0(nn.Module):
     def __init__(self, **model_parameters):
         super(DeepLabV3PlusModel_channel0, self).__init__()
         self.additional_conv = nn.Conv2d(1, 3, kernel_size=3, padding=1)
-        self.model = smp.DeepLabV3Plus(**model_parameters)  # default로 smp 라이브러리 사용
+        self.model = smp.DeepLabV3Plus(**model_parameters)
 
         if model_parameters.get("lora_use", False):  
             lora_config = model_parameters.get("lora_config")
@@ -61,7 +61,7 @@ class UnetPlusPlus(nn.Module):
     """
     def __init__(self, **model_parameters):
         super(UnetPlusPlus, self).__init__()
-        self.model = smp.UnetPlusPlus(**model_parameters)  # default로 smp 라이브러리 사용
+        self.model = smp.UnetPlusPlus(**model_parameters)
 
         if model_parameters.get("lora_use", False):  
             lora_config = model_parameters.get("lora_config")
