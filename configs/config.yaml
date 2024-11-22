@@ -42,7 +42,7 @@ model:
     #  torchseg에서 지원하는 인코더를 확인하려면 https://github.com/isaaccorley/torchseg/blob/main/torchseg/encoders/supported.py 에서 확인
     #  또는
     #  torchseg.list_encoders()로 확인 가능
-    torchseg_use: false  # torchseg 라이브러리 사용 유무/ 디폴트는 사용안함
+    library_type: smp  # [smp, torchseg] 둘 중 하나 입력
     transformer_use: false  # encoder로 transformer 계열을 사용할 경우 true로 설정해야함
     img_size: *image_size  # encoder로 transformer 계열을 사용할 경우 input image size를 설정해야함
 
