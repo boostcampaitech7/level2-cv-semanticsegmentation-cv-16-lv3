@@ -31,7 +31,7 @@ model:
     encoder_weights: advprop #[imagenet, advprop]2개 디폴트로 있음
     classes: 29
 
-    lora_use: false
+    lora_use: False
     lora_config:
       r: 8
       lora_alpha: 16
@@ -43,8 +43,8 @@ model:
     #  또는
     #  torchseg.list_encoders()로 확인 가능
     library_type: smp  # [smp, torchseg] 둘 중 하나 입력
-    transformer_use: false  # encoder로 transformer 계열을 사용할 경우 true로 설정해야함
-    img_size: *image_size  # encoder로 transformer 계열을 사용할 경우 input image size를 설정해야함
+    transformer_use: False  # encoder로 transformer 계열을 사용할 경우 True로 설정해야함
+    img_size: *image_size  # encoder로 transformer 계열을 사용할 경우 input image size를 설정해야함, 수정할 필요X
 
 
 # train 매개변수 설정
