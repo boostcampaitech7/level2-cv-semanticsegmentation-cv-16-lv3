@@ -36,9 +36,11 @@ def main(cfg):
     fnames, labels = setup(cfg)
 
     #A모듈에서 aug 에 해당하는 변환함수 가져옴.
-    transform = [getattr(A, aug)(**params) 
-                                         for aug, params in cfg.transform.items()
-                                         if params.get("use", True)]
+    transform = []
+    for aug, params in cfg.transform.items():
+        if params.get("use", True):
+            new_params = {k: v for k, v in params.items() if k != "use"}
+            transform.append(getattr(A, aug)(**new_params))
 
     train_dataset = XRayDataset(fnames,
                                 labels,
