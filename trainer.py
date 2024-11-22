@@ -68,7 +68,6 @@ class Trainer:
         with tqdm(total=len(self.train_loader), desc=f"[Training Epoch {epoch}]", disable=False) as pbar:
             for images, masks in self.train_loader:
                 images, masks = images.to(self.device), masks.to(self.device)
-                outputs = self.model(images)
                 
                 if self.fp16:
                     # AMP 적용: autocast로 감싸기
