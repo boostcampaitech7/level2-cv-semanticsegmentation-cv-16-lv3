@@ -83,7 +83,48 @@ sweep configuration -> initialize sweep -> wande agent 커맨드 명령어 줄 �
 streamlit 폴더에 들어가서
 `streamlit run main.py`
 
-# 6. 폴더 구조
+# 6. torchseg 사용 방법
+## 6.1 라이브러리 설치
+```bash
+pip install git+https://github.com/isaaccorley/torchseg
+```
+## 6.2 config.yaml 설정
+model의 parameters 설정에서 아래의 파라미터가 추가되었습니다.
+```yaml
+paramters:
+  library_type: torchseg
+  transformer_use: False
+  img_size: *image_size
+```
+### library_type
+torchseg: torchseg 라이브러리 모델 사용\
+smp: smp 라이브러리 모델을 사용
+### transformer_use
+True: transformer 인코더를 사용할 경우\
+False: CNN 인코더를 사용할 경우
+### img_size
+transformer 인코더에서 사용되는 옵션으로 input image의 사이즈와 동일해야 하기 때문에 별도로 수정하실 필요 없습니다.
+
+## 6.3 디버깅
+### RuntimeError가 발생할 경우
+`RuntimeError: No pretrained weights exist for {인코더 이름}. Use pretrained=False for random init.`\
+model의 parameters 설정에서 아래 파라미터를 수정합니다.
+```yaml
+paramters:
+  encoder_weights: None
+```
+
+### TypeError가 발생할 경우
+`TypeError: {인코터 이름}.__init()__ got an unexpected keyword argument 'output_stride'`\
+디코더의 파라미터 중 **encoder_output_stride**가 None이 아니어서 발생하는 케이스로 디코더를 Unet으로 변경해주세요.
+
+## 6.4 유의사항
+다양한 인코더로 실험한 결과\
+Unet > UnetPlusPlus > DeepLabV3Plus 순으로\
+Unet이 가장 안정적이었습니다.\
+Unet에서도 위의 에러가 발생하거나 다른 에러가 발생할 경우 말씀해주세요.
+
+# 7. 폴더 구조
 ```bash
 .
 ├── checkpoints # 데이터 학습된 모델 저장소
