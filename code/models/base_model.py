@@ -10,7 +10,7 @@ class UnetModel(nn.Module):
     def __init__(self, **model_parameters):
         super(UnetModel, self).__init__()
         self.model = smp.Unet(**model_parameters)
-        
+
         if model_parameters.get("lora_use", False):  
             lora_config = model_parameters.get("lora_config")
             lora_config = peft.LoraConfig(**lora_config)
@@ -62,7 +62,7 @@ class UnetPlusPlus(nn.Module):
     def __init__(self, **model_parameters):
         super(UnetPlusPlus, self).__init__()
         self.model = smp.UnetPlusPlus(**model_parameters)
-        
+
         if model_parameters.get("lora_use", False):  
             lora_config = model_parameters.get("lora_config")
             lora_config = peft.LoraConfig(**lora_config)
