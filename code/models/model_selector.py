@@ -1,4 +1,5 @@
 from .base_model import UnetModel, DeepLabV3PlusModel,UnetPlusPlus, DeepLabV3PlusModel_channel0
+from .torchseg_model import TS_UnetModel, TS_DeepLabV3PlusModel, TS_UnetPlusPlus, TS_DeepLabV3PlusModel_channel0
 import peft
 
 class ModelSelector():
@@ -11,16 +12,23 @@ class ModelSelector():
     """
     def __init__(self) -> None:
         self.model_classes = {
-            "Unet" : UnetModel,
-            "DeepLabV3PlusModel": DeepLabV3PlusModel,
-            "DeepLabV3PlusModel_channel0": DeepLabV3PlusModel_channel0,
-            "UnetPlusPlus": UnetPlusPlus
+            "smp": {
+                "Unet" : UnetModel,
+                "DeepLabV3PlusModel": DeepLabV3PlusModel,
+                "DeepLabV3PlusModel_channel0": DeepLabV3PlusModel_channel0,
+                "UnetPlusPlus": UnetPlusPlus
+            },
+            "torchseg": {
+                "Unet" : TS_UnetModel,
+                "DeepLabV3PlusModel": TS_DeepLabV3PlusModel,
+                "DeepLabV3PlusModel_channel0": TS_DeepLabV3PlusModel_channel0,
+                "UnetPlusPlus": TS_UnetPlusPlus
+            }
         }
-
     
     def get_model(self, model_name, **model_parameter):
-        if model_name not in self.model_classes:
+        if model_name not in self.model_classes[model_parameter["library_type"]]:
             raise ValueError(f"모델 '{model_name}'은 등록되지 않았습니다.")
 
         #get 매서드는 딕셔너리 매서드로, get를 통해 키가 존재하면 해당 키값 반환, 존재하지 않으면 None
-        return self.model_classes.get(model_name, None)(**model_parameter)
+        return self.model_classes[model_parameter["library_type"]].get(model_name, None)(**model_parameter)
