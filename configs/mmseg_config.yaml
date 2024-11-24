@@ -1,7 +1,7 @@
 # configs/mmseg_config.yaml
 
 # model config
-model_config: './mmsegmentation/my_configs/demo_xray.py'
+model_config: './mmsegmentation/my_configs/hrnet2.py'
 # image resize
 image_size: &image_size 1024 #&는 앵커로, 특정값은 별칭(*)으로 저장하여 yaml 에서 해당값을 여러번 재사용할 수 있게함.
 
@@ -18,8 +18,8 @@ train:
   max_epoch: *max_epoch
   image_root: "data/train/DCM"
   label_root: "data/train/outputs_json"
-  train_batch_size: 2
-  num_workers : 2
+  train_batch_size: 4
+  num_workers : 4
   lr: 1e-4
   weight_decay: 1e-6
 

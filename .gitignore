@@ -290,3 +290,4 @@ requirements.txt
 
 **/*.pth
 **/mmseg_results/*
+**/work_dirs/*

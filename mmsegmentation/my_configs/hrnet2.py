@@ -1,19 +1,15 @@
 
-
-checkpoint = 'https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segformer/mit_b5_20220624-658746d9.pth'  # noqa
-
-
-
 _base_ = [
-    "../configs/_base_/models/segformer_mit-b0.py",    
+    '../configs/_base_/models/fcn_hr18.py',
+    '../configs/_base_/schedules/schedule_80k.py',
     "../configs/_base_/default_runtime.py",
 ]
 
 
 data_preprocessor = dict(
     type='SegDataPreProcessor',
-    mean=[0., 0., 0.],
-    std=[255., 255., 255.],
+    mean=[123.675, 116.28, 103.53],
+    std=[58.395, 57.12, 57.375],
     bgr_to_rgb=True,
     size=(1024, 1024),
     pad_val=0,
@@ -21,24 +17,24 @@ data_preprocessor = dict(
 )
 
 model = dict(
-    type='EncoderDecoderWithoutArgmax',
+    pretrained='open-mmlab://msra/hrnetv2_w48',
     data_preprocessor=data_preprocessor,
     backbone=dict(
-        init_cfg=dict(type='Pretrained', checkpoint=checkpoint),
-        embed_dims=64,
-        num_heads=[1, 2, 5, 8],
-        num_layers=[3, 6, 40, 3]),
+        extra=dict(
+            stage2=dict(num_channels=(48, 96)),
+            stage3=dict(num_channels=(48, 96, 192)),
+            stage4=dict(num_channels=(48, 96, 192, 384)))),
     decode_head=dict(
-        type='SegformerHeadWithoutAccuracy',
-        in_channels=[64, 128, 320, 512],
+        type='FCNHeadWithoutAccuracy',
+        in_channels=[48, 96, 192, 384],
+        channels=sum([48, 96, 192, 384]),
         num_classes=29,
         loss_decode=dict(
             type='CrossEntropyLoss',
             use_sigmoid=True,
             loss_weight=1.0,
         ),
-    ),
-)
+))
 
 # optimizer
 optimizer = dict(type='AdamW', lr=1e-4, betas=(0.9, 0.999), weight_decay=0.01)
@@ -49,9 +45,6 @@ fp16 = dict(loss_scale='dynamic')
 
 # learning policy
 param_scheduler = [
-    # dict(
-    #     type='LinearLR', start_factor=1e-4, by_epoch=False, begin=0, end=1500
-    # ),
     dict(
         type='PolyLR',
         eta_min=0.0,
@@ -64,12 +57,7 @@ param_scheduler = [
 
 # training schedule for 20k
 train_cfg = dict(type='IterBasedTrainLoop', max_iters=20000, val_interval=2000)
-# dict(
-#     type='EpochBasedTrainLoop',
-#     max_epochs=2,  # 총 epoch 수
-#     val_interval=1  # 검증 주기 (매 epoch마다)
-#     )
-#dict(type='IterBasedTrainLoop', max_iters=20000, val_interval=2000)
+
 val_cfg = dict(type='ValLoop')
 test_cfg = dict(type='TestLoop')
 default_hooks = dict(
@@ -84,7 +72,6 @@ default_hooks = dict(
 
 # dataset settings
 dataset_train_type = 'XRayDataset'
-dataset_test_type = 'XRayDatasetTest'
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadXRayAnnotations'),
@@ -128,50 +115,7 @@ val_dataloader = dict(
         pipeline=val_pipeline
     )
 )
-test_dataloader = dict(
-    batch_size=16,
-    num_workers=8,
-    sampler=dict(type='DefaultSampler', shuffle=False),
-    dataset=dict(
-        type=dataset_test_type,
-        pipeline=test_pipeline
-    )
-)
+test_dataloader = val_dataloader
 
 val_evaluator = dict(type='DiceMetric')
-test_evaluator = dict(type='NoneMetric')
-
-
-
-# model = dict(
-#     backbone=dict(
-#         init_cfg=dict(type='Pretrained', checkpoint=checkpoint),
-#         embed_dims=64,
-#         num_layers=[3, 6, 40, 3]),
-#     decode_head=dict(in_channels=[64, 128, 320, 512]))
-
-
-# Train Segformer Mit B3
-# _base_ = ['./segformer_mit-b0_8xb1-160k_cityscapes-1024x1024.py']
-
-# checkpoint="https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segformer/mit_b3_20220624-13b1141c.pth"
-# model = dict(
-#     type='EncoderDecoderWithoutArgmax',
-#     data_preprocessor=data_preprocessor,
-#     backbone=dict(
-#         init_cfg=dict(type='Pretrained', checkpoint=checkpoint),
-#         embed_dims=64,
-#         num_heads=[1, 2, 5, 8],
-#         num_layers=[3, 4, 18, 3]),
-#     decode_head=dict(
-#         type='SegformerHeadWithoutAccuracy',
-#         in_channels=[64, 128, 320, 512],
-#         num_classes=29,
-#         loss_decode=dict(
-#             type='CrossEntropyLoss',
-#             use_sigmoid=True,
-#             loss_weight=1.0,
-#         ),
-#     ),
-# )
-
+test_evaluator = val_evaluator

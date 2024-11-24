@@ -5,7 +5,7 @@ import torch
 from mmseg.registry import  METRICS
 from mmengine.evaluator import BaseMetric
 from mmengine.logging import MMLogger, print_log
-from mmsegmentation.configs._base_.datasets.XRayDataset import  CLASSES
+from mmseg.datasets.XRayDataset import  CLASSES
 
 @METRICS.register_module()
 class DiceMetric(BaseMetric):

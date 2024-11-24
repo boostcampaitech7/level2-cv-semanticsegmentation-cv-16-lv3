@@ -15,56 +15,11 @@ from mmseg.evaluation.metrics import DiceMetric
 from mmseg.models.losses import LossByFeatMixIn
 from mmengine.config import Config
 from mmengine.runner import Runner, load_checkpoint
-from mmsegmentation.configs._base_.datasets.XRayDataset import CLASSES,IND2CLASS,IMAGE_COUNT
+from mmseg.datasets.XRayDataset import CLASSES,IND2CLASS,IMAGE_COUNT_TRAIN
 from mmengine.config import Config, DictAction
 from mmengine.logging import print_log
 
-
-# def parse_args():
-#     parser = argparse.ArgumentParser(description='Train a segmentor')
-#     parser.add_argument('--config', default="./mmsegmentation/my_configs/demo_xray.py")
-#     parser.add_argument('--work-dir', help='the dir to save logs and models')
-#     parser.add_argument(
-#         '--resume',
-#         action='store_true',
-#         default=False,
-#         help='resume from the latest checkpoint in the work_dir automatically')
-#     parser.add_argument(
-#         '--amp',
-#         action='store_true',
-#         default=True,
-#         help='enable automatic-mixed-precision training')
-#     parser.add_argument(
-#         '--cfg-options',
-#         nargs='+',
-#         action=DictAction,
-#         help='override some settings in the used config, the key-value pair '
-#         'in xxx=yyy format will be merged into config file. If the value to '
-#         'be overwritten is a list, it should be like key="[a,b]" or key=a,b '
-#         'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
-#         'Note that the quotation marks are necessary and that no white space '
-#         'is allowed.')
-#     parser.add_argument(
-#         '--launcher',
-#         choices=['none', 'pytorch', 'slurm', 'mpi'],
-#         default='none',
-#         help='job launcher')
-#     # When using PyTorch version >= 2.0.0, the `torch.distributed.launch`
-#     # will pass the `--local-rank` parameter to `tools/train.py` instead
-#     # of `--local_rank`.
-#     parser.add_argument('--local_rank', '--local-rank', type=int, default=0)
-#     args = parser.parse_args()
-#     if 'LOCAL_RANK' not in os.environ:
-#         os.environ['LOCAL_RANK'] = str(args.local_rank)
-
-#     return args
-
 def main(config):
-    # load config
-    # print(config)
-    # for i in config:
-    #     print(i)
-    #     print()
 
     # load config
     # cfg = Config.fromfile(args.config)
@@ -95,12 +50,18 @@ def main(config):
     cfg.val_dataloader.dataset.pipeline = cfg.val_pipeline
     cfg.val_dataloader.batch_size = config.validation.val_batch_size
     cfg.val_dataloader.num_workers = config.validation.num_workers
-    cfg.test_dataloader.dataset.pipeline = cfg.test_pipeline
+    cfg.test_dataloader.dataset.pipeline = cfg.val_pipeline
 
     # opt_type = 'AdamW'
     # cfg.optimizer.type = opt_type
-    cfg.optimizer.lr = config.train.lr
-    cfg.optimizer.weight_decay = config.train.weight_decay
+    cfg.optimizer=dict(
+    betas=(
+        0.9,
+        0.999,
+    ),
+    lr=config.train.lr,
+    type='AdamW',
+    weight_decay=config.train.weight_decay)
     cfg.optim_wrapper.optimizer = cfg.optimizer
 
     for sch in cfg.param_scheduler:
@@ -108,7 +69,7 @@ def main(config):
 
 
     max_epoch= config.train.max_epoch
-    iter_per_epoch = int(IMAGE_COUNT*0.8/config.train.train_batch_size)
+    iter_per_epoch = int(IMAGE_COUNT_TRAIN*0.8/config.train.train_batch_size)
     total_iter = iter_per_epoch*max_epoch
     val_interval= config.validation.val_interval * iter_per_epoch
     cfg.train_cfg= dict(type='IterBasedTrainLoop', max_iters=total_iter, val_interval=val_interval)
@@ -144,7 +105,10 @@ def main(config):
             cfg.optim_wrapper.loss_scale = 'dynamic'
 
   
-
+    for cf in cfg:
+        pass
+        # print(f'{cf}: {cfg[cf]}')
+        # print()
     runner = Runner.from_cfg(cfg)
 
     # start training

@@ -11,6 +11,6 @@ from .segmentors import *  # noqa: F401,F403
 from .text_encoder import *  # noqa: F401,F403
 
 __all__ = [
-    'BACKBONES', 'HEADS', 'LOSSES', 'SEGMENTORS', 'build_backbone',
-    'build_head', 'build_loss', 'build_segmentor', 'SegDataPreProcessor'
+   'BACKBONES', 'HEADS', 'LOSSES', 'SEGMENTORS', 'build_backbone',
+    'SegDataPreProcessor','build_head', 'build_loss', 'build_segmentor'
 ]
