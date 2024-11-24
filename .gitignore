@@ -287,7 +287,10 @@ output/*
 requirements.txt
 
 # mmsegmentation
-
 **/*.pth
 **/mmseg_results/*
 **/work_dirs/*
+
+
+**/clahe_dataset
+

@@ -19,11 +19,12 @@ from dataset import XRayDataset
 from code.loss_functions.loss_selector import LossSelector
 from code.scheduler.scheduler_selector import SchedulerSelector
 from code.models.model_selector import ModelSelector
-from code.utils.utils import set_seed, set_wandb,setup,sweep_train
+from code.utils.utils import set_seed, set_wandb, setup, sweep_train, print_trainable_parameters
 from code.utils.split_data import split_image_into_patches
 
-# warnings.filterwarnings('ignore')
 
+# warnings.filterwarnings('ignore')
+    
 def main(cfg):
     #wandb 설정.
     set_wandb(cfg)
@@ -35,9 +36,11 @@ def main(cfg):
     fnames, labels = setup(cfg)
 
     #A모듈에서 aug 에 해당하는 변환함수 가져옴.
-    transform = [getattr(A, aug)(**params) 
-                                         for aug, params in cfg.transform.items()
-                                         if params.get("use", True)]
+    transform = []
+    for aug, params in cfg.transform.items():
+        if params.get("use", True):
+            new_params = {k: v for k, v in params.items() if k != "use"}
+            transform.append(getattr(A, aug)(**new_params))
 
     train_dataset = XRayDataset(fnames,
                                 labels,
@@ -84,7 +87,15 @@ def main(cfg):
     # model 선택
     model_selector = ModelSelector()
     model = model_selector.get_model(cfg.model.name, **cfg.model.parameters)
-
+    
+    if cfg.model.parameters.check_dir: # pt파일 불러오기
+        model.load_pretrained_weights(cfg.model.parameters.check_dir)
+        print(f"pt파일 경로: {cfg.model.parameters.check_dir}")
+    
+    if cfg.model.parameters.lora_use: # lora 적용
+        model.apply_lora(cfg.model.parameters.lora_config)
+        print_trainable_parameters(model)
+    
     if torch.cuda.device_count()>1:
         model = torch.nn.DataParallel(model)
         print(f"multi {torch.cuda.device_count()} use")
@@ -115,7 +126,8 @@ def main(cfg):
         criterion=criterion,
         max_epoch=cfg.max_epoch,
         save_dir=cfg.save_dir,
-        val_interval=cfg.validation.val_interval
+        val_interval=cfg.validation.val_interval,
+        fp16=cfg.fp16
     )
 
     trainer.train()

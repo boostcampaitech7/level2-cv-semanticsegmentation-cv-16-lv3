@@ -59,13 +59,12 @@ def set_seed(seed):
     torch.backends.cudnn.benchmark = False
 
 
-
 def set_wandb(configs):
     """
     WandB 설정 및 Sweep 초기화
     """
     wandb.login(key=configs.wandb.api_key)
-
+    
     if configs.wandb.use_sweep:
         # Sweep 설정 로드
         with open(configs.wandb.sweep_path, "r") as sweep_file:
@@ -91,6 +90,21 @@ def set_wandb(configs):
             },
         )
         return None
+    
+    
+def print_trainable_parameters(model):
+    # 모델의 모든 파라미터와 학습 가능한 파라미터 수를 계산
+    total_params = sum(p.numel() for p in model.parameters())
+    total_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    
+    # 학습 가능한 파라미터의 비율 계산 (퍼센트로)
+    trainable_ratio = (total_trainable_params / total_params) * 100
+    
+    # 결과 출력
+    print(f'Total parameters: {total_params}')
+    print(f'Trainable parameters: {total_trainable_params}')
+    print(f'Trainable parameters ratio: {trainable_ratio:.2f}%')
+
 
 
 def sweep_train(configs):
@@ -112,7 +126,6 @@ def sweep_train(configs):
     # 학습 시작
     from train import main
     main(configs)
-
 
 
 def parse_args():

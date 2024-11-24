@@ -28,7 +28,7 @@ CLASSES = [
 ]
 class_to_color = {cls: tuple(color) for cls, color in zip(CLASSES, PALETTE)}
 
-def viz(user_selected_id=None, cnt = '1', for_gt = True, df = False): # 4개를 볼때, legend가 중복되어 4개가 나오는 것을 막기 위해 cnt인자를 추가
+def viz(user_selected_id=None, cnt = '1', for_gt = True, df = False, alpha = 0.4): # 4개를 볼때, legend가 중복되어 4개가 나오는 것을 막기 위해 cnt인자를 추가
     data_loader = DataLoader("../data/")
     pngs = data_loader.get_image_list()
     available_ids = list(set(img_path.split('/')[0] for img_path in pngs))
@@ -37,24 +37,25 @@ def viz(user_selected_id=None, cnt = '1', for_gt = True, df = False): # 4개를 
     if user_selected_id is None or user_selected_id not in available_ids:
         user_selected_id = random.choice(available_ids)
 
-    selected_images = [img for img in pngs if img.startswith(user_selected_id)]
+    selected_images = [img for img in pngs if img.startswith(user_selected_id)] 
     fig, ax = plt.subplots(2, 2, figsize=(12, 12), constrained_layout = True) # constrained_layout 추가하여 여백을 줄임
     ax = ax.flatten()
 
     if selected_images:
-        for idx, img_path in enumerate(selected_images[:4]):  # 최대 4개의 이미지만 시각화
+        for idx, img_path in enumerate(selected_images[:2]):  # 최대 4개의 이미지만 시각화
             full_image_path = os.path.join(data_loader.images_dir, img_path)
             full_json_path = data_loader.get_json_path(img_path)
+            annotations = data_loader.load_json(full_json_path)["annotations"]
             
             try:
                 image = data_loader.load_image(img_path).convert('RGB')
-                ax[idx * 2].imshow(image)
-                ax[idx * 2].axis('off')
-                ax[idx * 2].set_title(f"Selected Image: {user_selected_id}"
-                                      , fontsize=20
-                                    )
-                if for_gt:
-                    annotations = data_loader.load_json(full_json_path)["annotations"]
+                if for_gt is True:
+                    ax[idx * 2].imshow(image)
+                    ax[idx * 2].axis('off')
+                    ax[idx * 2].set_title(f"Selected Image: {user_selected_id}"
+                                        , fontsize=20
+                                        )
+                    
                     ax[idx * 2 + 1].imshow(image)
                     ax[idx * 2 + 1].axis('off')
                     ax[idx * 2 + 1].set_title(f"Selected Image with Label:{user_selected_id}"
@@ -68,27 +69,38 @@ def viz(user_selected_id=None, cnt = '1', for_gt = True, df = False): # 4개를 
                         polygon = Polygon(points, closed=True, linewidth=2, edgecolor='black', facecolor=color, alpha=0.7)
                         ax[idx * 2 + 1].add_patch(polygon)
                     
-                else:
+                elif for_gt is False:
+                    ax[idx * 2].imshow(image)
+                    ax[idx * 2].axis('off')
+                    ax[idx * 2].set_title(f"Selected Image with Label:{user_selected_id}"
+                                            , fontsize = 20
+                                            )
+
+                    for annotation in annotations:
+                        points = annotation["points"]
+                        label = annotation["label"]
+                        color = [c / 255.0 for c in class_to_color.get(label, (0, 0, 0))]
+                        polygon = Polygon(points, closed=True, linewidth=2, edgecolor='black', facecolor=color, alpha=0.7)
+                        ax[idx * 2].add_patch(polygon)
+
                     ax[idx * 2 + 1].imshow(image)
                     ax[idx * 2 + 1].axis('off')
                     ax[idx * 2 + 1].set_title(f"Selected Image with Pred:{user_selected_id}"
                                             , fontsize = 20
                                             )
-                    for idx, img in enumerate(selected_images.split('/')[1]):
-                        selected_img_df = df[df['image_name'] == img]
-                        ax[idx].set_title(f'{selected_images[idx]}')
-                        ax[idx].axis('off')
+                    csv_img_name = [i.split('/')[1] for i in selected_images]
+                    for idx, img in enumerate(csv_img_name):
+                        selected_img_df = df[df['image_name'].apply(lambda x: x in img)]
                         for _, row in selected_img_df.iterrows():
                             label = row["class"]
                             color = [c / 255.0 for c in class_to_color.get(label)]
                             mask = decode_rle_to_mask(row['rle'], 2048, 2048)
 
                             # mask에서 1인 값들의 좌표 추출
-                            points = np.where(mask == 1)  
-                            y_coords, x_coords = points[0], points[1]  # y, x 좌표 분리
+                            points = np.where(mask == 1) 
+                            y_coords, x_coords = points[0], points[1]
 
-                            # 기존에는 polygon으로 plot했지만 너무 느려서 scatter로 변경, 또한 이유는 모르겠지만, 색도 어둡게 나옴
-                            ax[idx].scatter(x_coords, y_coords, s=1, color=color, label=label, alpha=0.4)
+                            ax[idx * 2 + 1].scatter(x_coords, y_coords, s=1/2048, marker = '.', color=color, label=label, alpha=alpha)
             
             except FileNotFoundError:
                 print(f"Error: File not found at {full_image_path}")

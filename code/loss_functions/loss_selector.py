@@ -4,6 +4,8 @@ from .base_loss import (
     DiceLoss,
     IOULoss,
     CombinedLoss,
+    FocalDiceLoss,
+    FocalIOULoss,
 )
 
 class LossSelector:
@@ -21,6 +23,8 @@ class LossSelector:
             "DiceLoss": DiceLoss,
             "IOULoss": IOULoss,
             "CombinedLoss": CombinedLoss,
+            "FocalDiceLoss": FocalDiceLoss,
+            "FocalIOULoss": FocalIOULoss,
         }
 
     def get_loss(self, loss_name, **loss_parameter):

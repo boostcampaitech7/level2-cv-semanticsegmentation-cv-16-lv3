@@ -46,7 +46,7 @@ class InferenceViz():
                 csv_list.append(output_csv)
         return csv_list
 
-    def inference_viz(self, df, user_selected_id):
+    def inference_viz(self, df, user_selected_id, alpha):
         data_loader = DataLoader('../data')
         pngs = data_loader.get_test_img_list() 
         selected_images = [i for i in pngs if i.startswith(user_selected_id)] 
@@ -76,7 +76,7 @@ class InferenceViz():
                 y_coords, x_coords = points[0], points[1]  # y, x 좌표 분리
 
                 # 기존에는 polygon으로 plot했지만 너무 느려서 scatter로 변경, 또한 이유는 모르겠지만, 색도 어둡게 나옴
-                ax[idx].scatter(x_coords, y_coords, s=1, color=color, label=label, alpha=0.4)
+                ax[idx].scatter(x_coords, y_coords, s=1/2048, color=color, label=label, alpha=alpha)
                 #### scatter용 ####
 
                 #### Polygon용 ####

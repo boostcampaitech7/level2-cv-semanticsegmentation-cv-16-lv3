@@ -4,7 +4,7 @@
 image_size: &image_size 512 #&는 앵커로, 특정값은 별칭(*)으로 저장하여 yaml 에서 해당값을 여러번 재사용할 수 있게함.
 
 # 최대 epochs
-max_epoch: &max_epoch 2
+max_epoch: &max_epoch 40
 
 #model_name()
 model_name: &model_name Unet
@@ -18,10 +18,10 @@ wandb:
   api_key: ##본인의 api 키 적으시면 됩니다.
   team_name: CV_SOTA
   project_name: "Segmentation_project"
-  experiment_detail: 진행하는 실험의 이름
   exp_name: *model_name
   use_sweep: False # True 라고 적어야 사용합니다.
   sweep_path: "configs/config_sweep.yaml" 
+
 
 # 모델명 및 사전 학습 여부
 model:
@@ -30,6 +30,26 @@ model:
     encoder_name: efficientnet-b0
     encoder_weights: advprop #[imagenet, advprop]2개 디폴트로 있음
     classes: 29
+    in_channels: 1 # 채널 3개로 학습시 주석 처리
+
+    # pt 파일 불러와서 이어서 학습합니다. 사용하지 않을 경우 null, 할 경우 pt 파일 경로
+    check_dir: null
+
+    lora_use: False
+    lora_config:
+      r: 8
+      lora_alpha: 16
+      lora_dropout: 0.1
+      target_modules: "encoder._blocks.\\d+.(_expand_conv|_project_conv)$"
+      modules_to_save: ["decoder", "encoder._conv_head"]
+    
+    #  torchseg에서 지원하는 인코더를 확인하려면 https://github.com/isaaccorley/torchseg/blob/main/torchseg/encoders/supported.py 에서 확인
+    #  또는
+    #  torchseg.list_encoders()로 확인 가능
+    library_type: smp  # [smp, torchseg] 둘 중 하나 입력
+    transformer_use: False  # encoder로 transformer 계열을 사용할 경우 True로 설정해야함
+    img_size: *image_size  # encoder로 transformer 계열을 사용할 경우 input image size를 설정해야함, 수정할 필요X
+
 
 # train 매개변수 설정
 train:
@@ -43,7 +63,6 @@ train:
   channel_1: False
   patch_size: False #2048/256 = 8 즉,8 patch
 
-
 # validation 관련 인자
 validation:
   val_fold: 0
@@ -52,6 +71,7 @@ validation:
   threshold: 0.5
   val_batch_size: 4
 
+
 # 스케줄러 관련 설정
 scheduler:
   name: CosineAnnealingLR  # 스케줄러 이름
@@ -59,10 +79,13 @@ scheduler:
     T_max: *max_epoch
     eta_min: 1e-6
 
+fp16: True # AMP 사용시 True
+
 # loss 관련설정
 loss:
-  name: CombinedLoss
-  parameters: {} # dict 형태로 작성해야함
+  name: FocalDiceLoss
+  parameters: 
+    focal_wieght: 0.7 # dict 형태로 작성해야함
     
 
 # transform 관련_ 사용할려면 use: True로 대문제 True라고 적어야 합니다.
@@ -86,35 +109,15 @@ transform:
     contrast_limit: 0.2
     p: 0.5
 
-  # ColorJitter:
-  #   use: False
-  #   brightness: 0.2 # 밝기
-  #   contrast: 0.2 # 대비
-  #   saturation: 0.2 # 채도
-  #   hue: 0.1 # 색조
-  #   p: 0.5 # 적용확률
-
-
-
-
-
 
 #test 관련 
 test:
   image_root: "data/test/DCM"
-  model_path: "checkpoints"
-  model_path2: *model_name #model_path/model_path2/model_name 으로 model 가져옴.
-  model_file: "best_198epoch_0.9518.pt"
   output_csv: "output/submission3.csv"
-
-# Output paths
-output:
-  checkpoint_dir: "../checkpoints"
-  # name: "deeplabv3_resnet101_model.pt"
-
-
 
 
 # checkpoint 저장 경로
-save_dir: ./checkpoints  # 기본 저장 경로
+save_dir: ./checkpoints/config  # 기본 저장 경로
 
+# 학습이 끝나고 나오는 pt 저장경로를 복사붙여넣기 하면 됩니다.
+pt_dir: ./checkpoints/config/best_1epoch_0.0031.pt

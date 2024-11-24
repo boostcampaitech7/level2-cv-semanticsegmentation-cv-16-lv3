@@ -1,9 +1,6 @@
 import streamlit as st
 from utils.pred_viz import PredViz
 
-if "pred_index" not in st.session_state:
-    st.session_state.pred_index = 0
-
 def prediction_viewer(image_list, max_length):
     # """
     # 기본적으로 base_model에 있는 모델 전제하에 진행했습니다.
@@ -19,6 +16,8 @@ def prediction_viewer(image_list, max_length):
     # |_ UnetPlusPlus
     # |   |_ pt파일들
     # """
+    if "pred_index" not in st.session_state:
+        st.session_state.pred_index = 0
     st.title('Prediction Viewer')
     next_clicked = st.button("Next")
     prev_clicked = st.button("Prev")

@@ -2,15 +2,14 @@ import streamlit as st
 from utils.multi_segment_viz import MultiViz
 from utils.segment_viz import viz  # Import the viz function
 
-# index를 사용하여 next버튼과 prev버튼 시, 이미지 변환
-if "index" not in st.session_state:
-    st.session_state.index = 0
-
 # cnt(1개를 볼지 4개로 볼지)가 변환될 때마다, index 0으로 초기화
 def reset_index():
     st.session_state.index = 0
 
 def segment_viewer(image_list, max_length):
+    # index를 사용하여 next버튼과 prev버튼 시, 이미지 변환
+    if "index" not in st.session_state:
+        st.session_state.index = 0
     # 1개, 4개를 선택
     cnt = st.sidebar.selectbox('Select Image Number:', ['1', '4'], on_change=reset_index) # 몇개씩 볼지 바꿀 때마다 index초기화
     st.title("Segment Viewer")

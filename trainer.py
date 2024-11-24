@@ -10,9 +10,7 @@ import torch.nn.functional as F
 from tqdm.auto import tqdm
 from datetime import timedelta
 from torch.utils.data import DataLoader
-from omegaconf import OmegaConf
-config_path = os.path.join('configs', 'config.yaml')
-conf = OmegaConf.load(config_path)
+import torch.cuda.amp as amp
 
 def dice_coef(y_true, y_pred):
         y_true_f = y_true.flatten(2)
@@ -34,7 +32,8 @@ class Trainer:
                  criterion: torch.nn.modules.loss._Loss,
                  max_epoch: int,
                  save_dir: str,
-                 val_interval: int):
+                 val_interval: int,
+                 fp16: bool):
         self.model = model
         self.device = device
         self.train_loader = train_loader
@@ -43,27 +42,23 @@ class Trainer:
         self.scheduler = scheduler
         self.criterion = criterion
         self.max_epoch = max_epoch
-        self.save_dir = save_dir
+        self.save_dir = save_dir # checkpoint 최종 저장 경로
         self.threshold = threshold
         self.val_interval = val_interval
+        self.fp16 = fp16
+        self.scaler = amp.GradScaler() # AMP
 
-
-    def save_model(self, epoch, dice_score, before_path):
-        # 최종 저장 경로
-        output_dir = osp.join(self.save_dir,conf.model_name)
+    def save_model_new(self, epoch, dice_score):
+        output_dir = self.save_dir
         
         # checkpoint 저장 폴더 생성
         if not osp.isdir(output_dir):
             os.makedirs(output_dir, exist_ok=True)
 
-        if before_path != "" and osp.exists(before_path):
-            os.remove(before_path)
-
         output_path = osp.join(output_dir, f"best_{epoch}epoch_{dice_score:.4f}.pt")
         print("훈련된 파일 저장되는 경로: ", output_path) 
         torch.save(self.model, output_path)
         return output_path
-
 
     def train_epoch(self, epoch):
         train_start = time.time()
@@ -73,12 +68,24 @@ class Trainer:
         with tqdm(total=len(self.train_loader), desc=f"[Training Epoch {epoch}]", disable=False) as pbar:
             for images, masks in self.train_loader:
                 images, masks = images.to(self.device), masks.to(self.device)
-                outputs = self.model(images)
-
-                loss = self.criterion(outputs, masks)
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
+                
+                if self.fp16:
+                    # AMP 적용: autocast로 감싸기
+                    with amp.autocast():
+                        outputs = self.model(images)
+                        loss = self.criterion(outputs, masks)
+                    self.optimizer.zero_grad()
+                    # Scaler를 사용해 그래디언트 계산 및 업데이트
+                    self.scaler.scale(loss).backward()
+                    self.scaler.step(self.optimizer)
+                    self.scaler.update()
+                    
+                else:
+                    outputs = self.model(images)
+                    loss = self.criterion(outputs, masks)
+                    self.optimizer.zero_grad()
+                    loss.backward()
+                    self.optimizer.step()
 
                 total_loss += loss.item()
                 pbar.update(1)
@@ -118,9 +125,11 @@ class Trainer:
                     total_loss += loss.item()
 
                     outputs = torch.sigmoid(outputs)
-                    outputs = (outputs > self.threshold).detach().cpu()
-                    masks = masks.detach().cpu()
-
+                    # outputs = (outputs > self.threshold).detach().cpu()
+                    # masks = masks.detach().cpu()
+                    
+                    outputs = (outputs > self.threshold)
+                    
                     dice = dice_coef(outputs, masks)
                     dices.append(dice)
 
@@ -162,7 +171,8 @@ class Trainer:
 
         best_dice = 0.
         before_path = ""
-        
+        checkpoint_paths = []  # 최근 저장된 체크포인트 경로를 저장하는 리스트
+    
         for epoch in range(1, self.max_epoch + 1):
 
             train_loss = self.train_epoch(epoch)
@@ -185,6 +195,14 @@ class Trainer:
                 if best_dice < avg_dice:
                     print(f"Best performance at epoch: {epoch}, {best_dice:.4f} -> {avg_dice:.4f}\n")
                     best_dice = avg_dice
-                    before_path = self.save_model(epoch, best_dice, before_path)
+                    before_path = self.save_model_new(epoch, best_dice)
+                    checkpoint_paths.append(before_path)
+
+                    # 저장된 체크포인트가 3개를 넘으면 가장 오래된 체크포인트 삭제
+                    if len(checkpoint_paths) > 3:
+                        oldest_path = checkpoint_paths.pop(0)
+                        os.remove(oldest_path)
+                        print(f"Removed old checkpoint: {oldest_path}")
+
 
             self.scheduler.step()

@@ -17,10 +17,8 @@ class FocalLoss(nn.Module):
         self.gamma = gamma
 
     def forward(self, inputs, targets):
-        inputs = torch.sigmoid(inputs)
-        inputs = inputs.view(-1)
-        targets = targets.view(-1)
-        bce = F.binary_cross_entropy(inputs, targets, reduction='mean')
+        # binary_cross_entropy_with_logits는 sigmoid를 포함하므로 raw logits을 바로 사용
+        bce = F.binary_cross_entropy_with_logits(inputs, targets, reduction='mean')
         bce_exp = torch.exp(-bce)
         loss = self.alpha * (1 - bce_exp) ** self.gamma * bce
         return loss
@@ -65,3 +63,45 @@ class CombinedLoss(nn.Module):
         predictions = torch.sigmoid(predictions)
         dice = self.dice_loss(predictions, targets)
         return bce * self.bce_weight + dice * (1 - self.bce_weight)
+    
+
+class FocalDiceLoss(nn.Module):
+    def __init__(self, focal_weight=0.5, alpha=0.25, gamma=2, smooth=1.0, **kwargs):
+        super(FocalDiceLoss, self).__init__()
+        self.focal_weight = focal_weight
+        self.focal_loss = FocalLoss(alpha=alpha, gamma=gamma, **kwargs)
+        self.dice_loss = DiceLoss(smooth=smooth)
+
+    def forward(self, predictions, targets):
+        # Focal Loss 계산
+        focal = self.focal_loss(predictions, targets)
+        # Dice Loss 계산
+        dice = self.dice_loss(predictions, targets)
+        # 결합된 손실 반환
+        return self.focal_weight * focal + (1 - self.focal_weight) * dice
+
+class FocalIOULoss(nn.Module):
+    def __init__(self, focal_alpha=0.25, focal_gamma=2, iou_smooth=1., focal_weight=0.5, iou_weight=0.5):
+        """
+        Args:
+            focal_alpha (float): Focal Loss의 alpha 값.
+            focal_gamma (float): Focal Loss의 gamma 값.
+            iou_smooth (float): IOU Loss의 smooth 값.
+            focal_weight (float): Focal Loss의 가중치.
+            iou_weight (float): IOU Loss의 가중치.
+        """
+        super(FocalIOULoss, self).__init__()
+        self.focal_loss = FocalLoss(alpha=focal_alpha, gamma=focal_gamma)
+        self.iou_loss = IOULoss(smooth=iou_smooth)
+        self.focal_weight = focal_weight
+        self.iou_weight = iou_weight
+
+    def forward(self, predictions, targets):
+        """
+        Args:
+            predictions (torch.Tensor): 모델의 예측값 (logits).
+            targets (torch.Tensor): 타겟값 (binary masks).
+        """
+        focal = self.focal_loss(predictions, targets)
+        iou = self.iou_loss(predictions, targets)
+        return focal * self.focal_weight + iou * self.iou_weight
