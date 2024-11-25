@@ -50,7 +50,8 @@ def main(cfg):
                                 transforms=transform,
                                 is_train=True,
                                 channel_1=cfg.train.channel_1,
-                                patch_size= cfg.train.patch_size
+                                patch_size= cfg.train.patch_size,
+                                copy_k = cfg.copy_paste.k
                                 )
     
     valid_dataset = XRayDataset(fnames,
@@ -61,7 +62,8 @@ def main(cfg):
                                 transforms=transform,
                                 is_train=False,
                                 channel_1=cfg.train.channel_1,
-                                patch_size=cfg.train.patch_size 
+                                patch_size=cfg.train.patch_size,
+                                copy_k = 0 
                                 )
     
     train_loader = DataLoader(

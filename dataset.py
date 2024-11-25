@@ -9,6 +9,7 @@ import albumentations as A
 from torch.utils.data import Dataset
 from sklearn.model_selection import GroupKFold
 from code.utils.split_data import split_image_into_patches
+from code.utils.copy_paste import copy_paste
 
 CLASSES = [
     'finger-1', 'finger-2', 'finger-3', 'finger-4', 'finger-5',
@@ -20,7 +21,7 @@ CLASSES = [
 ]
 
 class XRayDataset(Dataset):
-    def __init__(self, fnames, labels, image_root, label_root, fold=0, transforms=None, is_train=True, channel_1=False, patch_size=False):
+    def __init__(self, fnames, labels, image_root, label_root, fold=0, transforms=None, is_train=True, channel_1=False, patch_size=False, copy_k = 0):
         self.transforms = A.Compose(transforms)
         self.is_train = is_train
         self.image_root = image_root
@@ -31,6 +32,7 @@ class XRayDataset(Dataset):
         self.num_classes = len(CLASSES)
         self.channel_1 = channel_1
         self.patch_size = patch_size
+        self.copy_k = copy_k
         
         groups = [osp.dirname(fname) for fname in fnames]
         
@@ -94,6 +96,11 @@ class XRayDataset(Dataset):
             class_label = np.zeros(image.shape[:2], dtype=np.uint8)
             cv2.fillPoly(class_label, [points], 1)
             label[..., class_ind] = class_label
+
+        # k가 0이 아니고, train모드일때만 copy and paste 추가
+        if self.copy_k != 0 and self.is_train:
+            image, label = copy_paste(self.image_root, self.label_root, self.fnames, self.labels, image, label,
+                                      CLASSES, self.copy_k)
         
         if self.transforms is not None:
             inputs = {"image": image, "mask": label} if self.is_train else {"image": image}
