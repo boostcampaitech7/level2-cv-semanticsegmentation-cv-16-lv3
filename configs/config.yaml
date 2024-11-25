@@ -86,7 +86,9 @@ loss:
   name: FocalDiceLoss
   parameters: 
     focal_wieght: 0.7 # dict 형태로 작성해야함
-    
+
+copy_paste:
+  k: 3    
 
 # transform 관련_ 사용할려면 use: True로 대문제 True라고 적어야 합니다.
 transform:
