@@ -288,4 +288,4 @@ requirements.txt
 **/clahe_dataset
 
 #mmseg
-**/mmseg_resultsW
+**/mmseg_results/
