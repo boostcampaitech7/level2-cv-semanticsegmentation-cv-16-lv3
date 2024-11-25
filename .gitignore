@@ -286,3 +286,6 @@ data/*
 output/*
 requirements.txt
 **/clahe_dataset
+
+#mmseg
+**/mmseg_results/
