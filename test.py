@@ -80,7 +80,7 @@ if __name__=="__main__":
     parser.add_argument("--output", type=str, default="./output.csv")
     parser.add_argument("--resize", type=int, default=512, help="Size to resize images (both width and height)")
     parser.add_argument("--channel", type=int, default=3, help="set channel")
-    parser.add_argument("--config", type=str, default="./config/config.yaml", help="set channel")
+    parser.add_argument("--config", type=str, default="./configs/config.yaml", help="set channel")
     args = parser.parse_args()
     conf = OmegaConf.load(args.config)
     print(conf)
