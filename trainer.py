@@ -10,7 +10,7 @@ import torch.nn.functional as F
 from tqdm.auto import tqdm
 from datetime import timedelta
 from torch.utils.data import DataLoader
-import torch.cuda.amp as amp
+import torch.amp as amp
 
 def dice_coef(y_true, y_pred):
         y_true_f = y_true.flatten(2)
@@ -71,7 +71,7 @@ class Trainer:
                 
                 if self.fp16:
                     # AMP 적용: autocast로 감싸기
-                    with amp.autocast():
+                    with amp.autocast(device_type='cuda'):
                         outputs = self.model(images)
                         loss = self.criterion(outputs, masks)
                     self.optimizer.zero_grad()
