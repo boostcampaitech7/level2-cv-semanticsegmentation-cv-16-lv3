@@ -7,7 +7,7 @@ image_size: &image_size 1024 #&는 앵커로, 특정값은 별칭(*)으로 저�
 max_epoch: &max_epoch 50
 
 #model_name()
-model_name: &model_name UnetPlusPlus
+model_name: &model_name Unet
 
 # random seed값
 seed: 42
@@ -27,10 +27,16 @@ wandb:
 model:
   name: *model_name # 모델 이름
   parameters:         # 모델 파라미터 섹션 -> 이는 segmentation_models_pytorch 공식 라이브러리의 github에서 확인.
-    encoder_name: convnext_xxlarge
-    encoder_weights: advprop #[imagenet, advprop]2개 디폴트로 있음
+    encoder_name: swin_base_patch4_window12_384
+    encoder_weights: True #smp에서는[imagenet, advprop]2개 디폴트로 있음
+    in_channels: 3 
     classes: 29
-    # in_channels: 1 # 채널 3개로 학습시 주석 처리
+    encoder_depth: 5 
+    encoder_indices: [2, 4, 6, 8, 10]
+    decoder_channels: [256, 128, 64, 32, 16]
+    encoder_params: 
+      - scale_factor: [8,4,2,1,0.5]
+      - img_size: 256
 
     # pt 파일 불러와서 이어서 학습합니다. 사용하지 않을 경우 null, 할 경우 pt 파일 경로
     check_dir: null
@@ -48,7 +54,7 @@ model:
     #  또는
     #  torchseg.list_encoders()로 확인 가능
     library_type: torchseg  # [smp, torchseg] 둘 중 하나 입력
-    transformer_use: False  # encoder로 transformer 계열을 사용할 경우 True로 설정해야함
+    transformer_use: True  # encoder로 transformer 계열을 사용할 경우 True로 설정해야함
     img_size: *image_size  # encoder로 transformer 계열을 사용할 경우 input image size를 설정해야함, 수정할 필요X
 
 
