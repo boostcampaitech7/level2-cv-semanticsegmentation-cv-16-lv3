@@ -97,12 +97,15 @@ def main(cfg):
     if cfg.model.parameters.lora_use: # lora 적용
         model.apply_lora(cfg.model.parameters.lora_config)
         print_trainable_parameters(model)
+
+
+    model.to(device)
     
     if torch.cuda.device_count()>1:
         model = torch.nn.DataParallel(model)
         print(f"multi {torch.cuda.device_count()} use")
 
-    model.to(device)
+    
 
     # optimizer는 고정
     optimizer = optim.Adam(params=model.parameters(),
