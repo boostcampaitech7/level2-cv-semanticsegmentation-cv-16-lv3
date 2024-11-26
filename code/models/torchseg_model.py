@@ -21,13 +21,12 @@ class TS_UnetModel(nn.Module):
         elif encoder_depth == 3 or encoder_depth == 6:  # encoder의 depth가 3이거나 6인 경우는 에러 나오게 설정했음
             raise(ValueError(f" encoder의 depth가 {encoder_depth}인 경우는 지원하지 않습니다."))
         
-        # config의 model parameter가 전부 들어가 불필요한 인자는 제거하는 작업
+        # config의 model parameter가 전부 들어가 모델에 필요한 인자만 추가하는 작업
         torchseg_parameters = {key: value for key, value in model_parameters.items() 
-                                if key not in ["lora_use", "lora_config", "library_type", "transformer_use", "img_size"]}
-        print(torchseg_parameters)
+                                if key in ["encoder_name", "encoder_weights", "classes", "in_channels",
+                                           "encoder_depth", "decoder_channels", "head_upsampling", "encoder_params"]}
         self.model = torchseg.Unet(**torchseg_parameters)
 
-        print(model_parameters)
         if model_parameters.get("lora_use", False):  
             lora_config = model_parameters.get("lora_config")
             lora_config = peft.LoraConfig(**lora_config)
@@ -52,9 +51,9 @@ class TS_DeepLabV3PlusModel(nn.Module):
         elif encoder_depth == 3 or encoder_depth == 6:  # encoder의 depth가 3이거나 6인 경우는 에러 나오게 설정했음
             raise(ValueError(f" encoder의 depth가 {encoder_depth}인 경우는 지원하지 않습니다."))
         
-        # config의 model parameter가 전부 들어가 불필요한 인자는 제거하는 작업
+        # config의 model parameter가 전부 들어가 모델에 필요한 인자만 추가하는 작업
         torchseg_parameters = {key: value for key, value in model_parameters.items() 
-                                if key not in ["lora_use", "lora_config", "library_type", "transformer_use", "img_size"]}
+                                if key in ["encoder_name", "encoder_weights", "classes", "in_channels", "encoder_depth", "encoder_params"]}
         self.model = torchseg.DeepLabV3Plus(**torchseg_parameters)
 
         if model_parameters.get("lora_use", False):  
@@ -83,9 +82,9 @@ class TS_DeepLabV3PlusModel_channel0(nn.Module):
         elif encoder_depth == 3 or encoder_depth == 6:  # encoder의 depth가 3이거나 6인 경우는 에러 나오게 설정했음
             raise(ValueError(f" encoder의 depth가 {encoder_depth}인 경우는 지원하지 않습니다."))
         
-        # config의 model parameter가 전부 들어가 불필요한 인자는 제거하는 작업
+        # config의 model parameter가 전부 들어가 모델에 필요한 인자만 추가하는 작업
         torchseg_parameters = {key: value for key, value in model_parameters.items() 
-                                if key not in ["lora_use", "lora_config", "library_type", "transformer_use", "img_size"]}
+                                if key in ["encoder_name", "encoder_weights", "classes", "in_channels", "encoder_depth", "encoder_params"]}
         self.model = torchseg.DeepLabV3Plus(**torchseg_parameters)
 
         if model_parameters.get("lora_use", False):  
@@ -115,9 +114,10 @@ class TS_UnetPlusPlus(nn.Module):
         elif encoder_depth == 3 or encoder_depth == 6:  # encoder의 depth가 3이거나 6인 경우는 에러 나오게 설정했음
             raise(ValueError(f" encoder의 depth가 {encoder_depth}인 경우는 지원하지 않습니다."))
         
-        # config의 model parameter가 전부 들어가 불필요한 인자는 제거하는 작업
+        # config의 model parameter가 전부 들어가 모델에 필요한 인자만 추가하는 작업
         torchseg_parameters = {key: value for key, value in model_parameters.items() 
-                                if key not in ["lora_use", "lora_config", "library_type", "transformer_use", "img_size"]}
+                                if key in ["encoder_name", "encoder_weights", "classes", "in_channels",
+                                           "encoder_depth", "decoder_channels", "head_upsampling", "encoder_params"]}
         self.model = torchseg.UnetPlusPlus(**torchseg_parameters)
 
         if model_parameters.get("lora_use", False):  
