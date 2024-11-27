@@ -1,9 +1,18 @@
+default_scope = 'mmseg'
+env_cfg = dict(
+    cudnn_benchmark=True,
+    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
+    dist_cfg=dict(backend='nccl'),
+)
+vis_backends = [dict(type='LocalVisBackend')]
+visualizer = dict(
+    type='SegLocalVisualizer', vis_backends=vis_backends, name='visualizer')
+log_processor = dict(by_epoch=False)
+log_level = 'INFO'
+load_from = None
+resume = False
 
-_base_ = [
-    '../configs/hrnet/fcn_hr18_4xb4-80k_isaid-896x896.py',
- #  '../configs/_base_/schedules/schedule_80k.py',
-  #  "../configs/_base_/default_runtime.py",
-]
+tta_model = dict(type='SegTTAModel')
 
 
 data_preprocessor = dict(
@@ -16,58 +25,61 @@ data_preprocessor = dict(
     seg_pad_val=255,
 )
 
+norm_cfg = dict(type='SyncBN', requires_grad=True)
 
-# model = dict(
-#     pretrained='open-mmlab://msra/hrnetv2_w48',
-#     data_preprocessor=data_preprocessor,
-#     backbone=dict(
-#         extra=dict(
-#             stage2=dict(num_channels=(48, 96)),
-#             stage3=dict(num_channels=(48, 96, 192)),
-#             stage4=dict(num_channels=(48, 96, 192, 384)))),
-#     decode_head=dict(
-#         type='FCNHeadWithoutAccuracy',
-#         in_channels=[48, 96, 192, 384],
-#         channels=sum([48, 96, 192, 384]),
-#         num_classes=29,
-#         loss_decode=dict(
-#             type='CrossEntropyLoss',
-#             use_sigmoid=True,
-#             loss_weight=1.0,
-#         ),
-# ))
 model = dict(
-    pretrained='open-mmlab://msra/hrnetv2_w48',  # HRNetV2-W48 모델의 pre-trained weights
+    type='EncoderDecoder',
     data_preprocessor=data_preprocessor,
-    type='EncoderDecoderWithoutArgmax',
+    pretrained='open-mmlab://msra/hrnetv2_w48',
     backbone=dict(
+        type='HRNet',
+        norm_cfg=norm_cfg,
+        norm_eval=False,
         extra=dict(
-            stage2=dict(num_channels=(48, 96)),
-            stage3=dict(num_channels=(48, 96, 192)),
-            stage4=dict(num_channels=(48, 96, 192, 384))
-        )
-    ),
+            stage1=dict(
+                num_modules=1,
+                num_branches=1,
+                block='BOTTLENECK',
+                num_blocks=(4, ),
+                num_channels=(64, )),
+            stage2=dict(
+                num_modules=1,
+                num_branches=2,
+                block='BASIC',
+                num_blocks=(4, 4),
+                num_channels=(48, 96)),
+            stage3=dict(
+                num_modules=4,
+                num_branches=3,
+                block='BASIC',
+                num_blocks=(4, 4, 4),
+                num_channels=(48, 96, 192)),
+            stage4=dict(
+                num_modules=3,
+                num_branches=4,
+                block='BASIC',
+                num_blocks=(4, 4, 4, 4),
+                num_channels=(48, 96, 192, 384)))),
     decode_head=dict(
-        type='FCNHeadWithoutAccuracy',  # FCNHead 유형을 사용
-        in_channels=[48, 96, 192, 384],  # 각 stage에서의 입력 채널 수
-        channels=sum([48, 96, 192, 384]),  # 전체 채널 수 (모든 stage 채널의 합)
-        num_classes=29,  # 출력 클래스 수
-        input_transform='resize_concat', 
+        type='FCNHeadWithoutAccuracy',
+        in_channels=[48, 96, 192, 384],
+        in_index=(0, 1, 2, 3),
+        channels=sum([48, 96, 192, 384]),
+        input_transform='resize_concat',
+        kernel_size=1,
+        num_convs=1,
+        concat_input=False,
+        dropout_ratio=-1,
+        num_classes=29,
+        norm_cfg=norm_cfg,
+        align_corners=False,
         loss_decode=dict(
-            type='CrossEntropyLoss',  # CrossEntropyLoss 사용
-            use_sigmoid=True,  # Sigmoid 활성화 사용
-            loss_weight=1.0,  # 손실 가중치
-        ),
-    ),
-    test_cfg=dict(
-        mode='whole',  # Whole image inference during testing
-        crop_size=(1024, 1024)  # Ensures the output is of size 1024x1024
-    ),
-    # val_cfg=dict(  # 이 부분은 MMsegmentation에 기본적으로 지원되지는 않지만, 원하는 경우 커스터마이징 가능
-    #     mode='whole',
-    #     crop_size=(1024, 1024),
-    # ),
-)
+            type='BCEDICE')),
+    # model training and testing settings
+    train_cfg=dict(),
+    test_cfg=dict(mode='whole'))
+
+
 # optimizer
 optimizer = dict(type='AdamW', lr=1e-4, betas=(0.9, 0.999), weight_decay=0.01)
 optim_wrapper = dict(type='OptimWrapper', optimizer=optimizer, clip_grad=None)
