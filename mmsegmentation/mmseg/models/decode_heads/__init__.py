@@ -37,6 +37,7 @@ from .setr_mla_head import SETRMLAHead
 from .setr_up_head import SETRUPHead
 from .stdc_head import STDCHead
 from .uper_head import UPerHead
+from .uper_head_without_accuracy import UPerHeadWithoutAccuracy
 from .vpd_depth_head import VPDDepthHead
 
 __all__ = [
@@ -49,4 +50,5 @@ __all__ = [
     'KernelUpdateHead', 'KernelUpdator', 'MaskFormerHead', 'Mask2FormerHead',
     'LightHamHead', 'PIDHead', 'DDRHead', 'VPDDepthHead', 'SideAdapterCLIPHead',
     'ASPPHeadWithoutAccuracy', 'FCNHeadWithoutAccuracy', 'SegformerHeadWithoutAccuracy',
+    'UPerHeadWithoutAccuracy'
 ]
