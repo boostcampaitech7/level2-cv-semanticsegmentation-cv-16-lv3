@@ -14,7 +14,7 @@ resume = False
 
 tta_model = dict(type='SegTTAModel')
 
-
+# model settings
 data_preprocessor = dict(
     type='SegDataPreProcessor',
     mean=[123.675, 116.28, 103.53],
@@ -26,55 +26,58 @@ data_preprocessor = dict(
 )
 
 norm_cfg = dict(type='SyncBN', requires_grad=True)
-
+backbone_norm_cfg = dict(type='LN', requires_grad=True)
+checkpoint_file = 'https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/swin/swin_large_patch4_window12_384_22k_20220412-6580f57d.pth'  # noqa
 model = dict(
-    type='EncoderDecoder',
+    type='EncoderDecoderWithoutArgmax',
     data_preprocessor=data_preprocessor,
-    pretrained='open-mmlab://msra/hrnetv2_w48',
+    pretrained=None,
     backbone=dict(
-        type='HRNet',
-        norm_cfg=norm_cfg,
-        norm_eval=False,
-        extra=dict(
-            stage1=dict(
-                num_modules=1,
-                num_branches=1,
-                block='BOTTLENECK',
-                num_blocks=(4, ),
-                num_channels=(64, )),
-            stage2=dict(
-                num_modules=1,
-                num_branches=2,
-                block='BASIC',
-                num_blocks=(4, 4),
-                num_channels=(48, 96)),
-            stage3=dict(
-                num_modules=4,
-                num_branches=3,
-                block='BASIC',
-                num_blocks=(4, 4, 4),
-                num_channels=(48, 96, 192)),
-            stage4=dict(
-                num_modules=3,
-                num_branches=4,
-                block='BASIC',
-                num_blocks=(4, 4, 4, 4),
-                num_channels=(48, 96, 192, 384)))),
+        type='SwinTransformer',
+        init_cfg=dict(type='Pretrained', checkpoint=checkpoint_file),
+        pretrain_img_size=384,
+        embed_dims=192,
+        patch_size=4,
+        window_size=12,
+        mlp_ratio=4,
+        depths=[2, 2, 18, 2],
+        num_heads=[6, 12, 24, 48],
+        strides=(4, 2, 2, 2),
+        out_indices=(0, 1, 2, 3),
+        qkv_bias=True,
+        qk_scale=None,
+        patch_norm=True,
+        drop_rate=0.,
+        attn_drop_rate=0.,
+        drop_path_rate=0.3,
+        use_abs_pos_embed=False,
+        act_cfg=dict(type='GELU'),
+        norm_cfg=backbone_norm_cfg),
     decode_head=dict(
-        type='FCNHeadWithoutAccuracy',
-        in_channels=[48, 96, 192, 384],
-        in_index=(0, 1, 2, 3),
-        channels=sum([48, 96, 192, 384]),
-        input_transform='resize_concat',
-        kernel_size=1,
-        num_convs=1,
-        concat_input=False,
-        dropout_ratio=-1,
+        type='UPerHeadWithoutAccuracy',
+        in_channels=[192, 384, 768, 1536],
+        in_index=[0, 1, 2, 3],
+        pool_scales=(1, 2, 3, 6),
+        channels=512,
+        dropout_ratio=0.1,
         num_classes=29,
         norm_cfg=norm_cfg,
         align_corners=False,
         loss_decode=dict(
-            type='BCEDICE')),
+            type='DiceLoss', use_sigmoid=True, loss_weight=1.0)),
+    auxiliary_head=dict(
+        type='FCNHeadWithoutAccuracy',
+        in_channels=768,
+        in_index=2,
+        channels=256,
+        num_convs=1,
+        concat_input=False,
+        dropout_ratio=0.1,
+        num_classes=29,
+        norm_cfg=norm_cfg,
+        align_corners=False,
+        loss_decode=dict(
+            type='DiceLoss', use_sigmoid=True, loss_weight=0.4)),
     # model training and testing settings
     train_cfg=dict(),
     test_cfg=dict(mode='whole'))
@@ -89,6 +92,9 @@ fp16 = dict(loss_scale='dynamic')
 
 # learning policy
 param_scheduler = [
+    # dict(
+    #     type='LinearLR', start_factor=1e-4, by_epoch=False, begin=0, end=1500
+    # ),
     dict(
         type='PolyLR',
         eta_min=0.0,
@@ -116,6 +122,7 @@ default_hooks = dict(
 
 # dataset settings
 dataset_train_type = 'XRayDataset'
+dataset_test_type = 'XRayDatasetTest'
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadXRayAnnotations'),
@@ -159,7 +166,17 @@ val_dataloader = dict(
         pipeline=val_pipeline
     )
 )
-test_dataloader = val_dataloader
+test_dataloader = dict(
+    batch_size=16,
+    num_workers=8,
+    sampler=dict(type='DefaultSampler', shuffle=False),
+    dataset=dict(
+        type=dataset_test_type,
+        pipeline=test_pipeline
+    )
+)
 
 val_evaluator = dict(type='DiceMetric')
-test_evaluator = val_evaluator
+test_evaluator = dict(type='NoneMetric')
+
+
