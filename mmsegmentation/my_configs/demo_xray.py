@@ -1,14 +1,7 @@
-
-
-checkpoint = 'https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segformer/mit_b5_20220624-658746d9.pth'  # noqa
-
-
-
 _base_ = [
     "../configs/_base_/models/segformer_mit-b0.py",    
     "../configs/_base_/default_runtime.py",
 ]
-
 
 data_preprocessor = dict(
     type='SegDataPreProcessor',
@@ -19,7 +12,7 @@ data_preprocessor = dict(
     pad_val=0,
     seg_pad_val=255,
 )
-
+checkpoint = 'https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segformer/mit_b5_20220624-658746d9.pth'  # noqa
 model = dict(
     type='EncoderDecoderWithoutArgmax',
     data_preprocessor=data_preprocessor,
@@ -64,12 +57,7 @@ param_scheduler = [
 
 # training schedule for 20k
 train_cfg = dict(type='IterBasedTrainLoop', max_iters=20000, val_interval=2000)
-# dict(
-#     type='EpochBasedTrainLoop',
-#     max_epochs=2,  # 총 epoch 수
-#     val_interval=1  # 검증 주기 (매 epoch마다)
-#     )
-#dict(type='IterBasedTrainLoop', max_iters=20000, val_interval=2000)
+
 val_cfg = dict(type='ValLoop')
 test_cfg = dict(type='TestLoop')
 default_hooks = dict(
@@ -141,37 +129,4 @@ test_dataloader = dict(
 val_evaluator = dict(type='DiceMetric')
 test_evaluator = dict(type='NoneMetric')
 
-
-
-# model = dict(
-#     backbone=dict(
-#         init_cfg=dict(type='Pretrained', checkpoint=checkpoint),
-#         embed_dims=64,
-#         num_layers=[3, 6, 40, 3]),
-#     decode_head=dict(in_channels=[64, 128, 320, 512]))
-
-
-# Train Segformer Mit B3
-# _base_ = ['./segformer_mit-b0_8xb1-160k_cityscapes-1024x1024.py']
-
-# checkpoint="https://download.openmmlab.com/mmsegmentation/v0.5/pretrain/segformer/mit_b3_20220624-13b1141c.pth"
-# model = dict(
-#     type='EncoderDecoderWithoutArgmax',
-#     data_preprocessor=data_preprocessor,
-#     backbone=dict(
-#         init_cfg=dict(type='Pretrained', checkpoint=checkpoint),
-#         embed_dims=64,
-#         num_heads=[1, 2, 5, 8],
-#         num_layers=[3, 4, 18, 3]),
-#     decode_head=dict(
-#         type='SegformerHeadWithoutAccuracy',
-#         in_channels=[64, 128, 320, 512],
-#         num_classes=29,
-#         loss_decode=dict(
-#             type='CrossEntropyLoss',
-#             use_sigmoid=True,
-#             loss_weight=1.0,
-#         ),
-#     ),
-# )
 
