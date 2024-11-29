@@ -11,11 +11,12 @@ from .ohem_cross_entropy_loss import OhemCrossEntropy
 from .silog_loss import SiLogLoss
 from .tversky_loss import TverskyLoss
 from .utils import reduce_loss, weight_reduce_loss, weighted_loss
-
+from .loss_by_feat_mix_in import LossByFeatMixIn
+from .BCE_DICE_loss import BCEDICE
 __all__ = [
     'accuracy', 'Accuracy', 'cross_entropy', 'binary_cross_entropy',
     'mask_cross_entropy', 'CrossEntropyLoss', 'reduce_loss',
     'weight_reduce_loss', 'weighted_loss', 'LovaszLoss', 'DiceLoss',
     'FocalLoss', 'TverskyLoss', 'OhemCrossEntropy', 'BoundaryLoss',
-    'HuasdorffDisstanceLoss', 'SiLogLoss'
+    'HuasdorffDisstanceLoss', 'SiLogLoss', 'LossByFeatMixIn', 'BCEDICE'
 ]
