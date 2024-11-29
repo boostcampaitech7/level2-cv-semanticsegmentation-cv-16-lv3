@@ -289,3 +289,4 @@ requirements.txt
 
 #mmseg
 **/mmseg_results/
+**/mmseg/.mim/
