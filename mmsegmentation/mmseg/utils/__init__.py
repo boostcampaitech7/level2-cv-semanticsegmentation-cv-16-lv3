@@ -20,7 +20,6 @@ from .typing_utils import (ConfigType, ForwardResults, MultiConfig,
                            OptConfigType, OptMultiConfig, OptSampleList,
                            SampleList, TensorDict, TensorList)
 from .post_process_result_mixin import PostProcessResultMixin
-# isort: off
 from .mask_classification import MatchMasks, seg_data_to_instance_data
 
 __all__ = [
