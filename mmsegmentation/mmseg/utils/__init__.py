@@ -19,8 +19,7 @@ from .tokenizer import tokenize
 from .typing_utils import (ConfigType, ForwardResults, MultiConfig,
                            OptConfigType, OptMultiConfig, OptSampleList,
                            SampleList, TensorDict, TensorList)
-
-# isort: off
+from .post_process_result_mixin import PostProcessResultMixin
 from .mask_classification import MatchMasks, seg_data_to_instance_data
 
 __all__ = [
@@ -67,4 +66,5 @@ __all__ = [
     'MatchMasks',
     'bdd100k_classes',
     'bdd100k_palette',
+    'PostProcessResultMixin'
 ]
